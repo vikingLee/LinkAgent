@@ -16,6 +16,7 @@ package com.shulie.instrument.simulator.agent.instrument;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.instrument.Instrumentation;
@@ -26,6 +27,9 @@ import java.net.URL;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.jar.JarFile;
+
+import com.alibaba.ttl.threadpool.agent.TtlAgent;
 
 /**
  * @author xiaobin.zfb|xiaobin@shulie.io         入口类
@@ -33,13 +37,14 @@ import java.util.concurrent.TimeUnit;
  */
 public class InstrumentLauncher {
     private static final String DEFAULT_AGENT_HOME
-            = new File(InstrumentLauncher.class.getProtectionDomain().getCodeSource().getLocation().getFile())
-            .getParent();
+        = new File(InstrumentLauncher.class.getProtectionDomain().getCodeSource().getLocation().getFile())
+        .getParent();
 
     private final static String SIMULATOR_KEY_DELAY = "simulator.delay";
     private final static String SIMULATOR_KEY_UNIT = "simulator.unit";
 
     public static void premain(final String agentArgs, final Instrumentation instrumentation) {
+        System.out.println("preMain开始打印启动参数" + agentArgs);
         start(agentArgs, instrumentation);
     }
 
@@ -48,6 +53,7 @@ public class InstrumentLauncher {
     }
 
     public static void agentmain(String agentArgs, Instrumentation inst) {
+        System.out.println("agentMain开始打印启动参数" + agentArgs);
         start(agentArgs, inst);
     }
 
@@ -63,8 +69,8 @@ public class InstrumentLauncher {
      */
     private static boolean isNotBlank(final String string) {
         return null != string
-                && string.length() > 0
-                && !string.matches("^\\s*$");
+            && string.length() > 0
+            && !string.matches("^\\s*$");
     }
 
     /**
@@ -103,8 +109,8 @@ public class InstrumentLauncher {
             }
             final String[] kvSegmentArray = kvPairSegmentString.split("=");
             if (kvSegmentArray.length != 2
-                    || isBlank(kvSegmentArray[0])
-                    || isBlank(kvSegmentArray[1])) {
+                || isBlank(kvSegmentArray[0])
+                || isBlank(kvSegmentArray[1])) {
                 continue;
             }
             featureMap.put(kvSegmentArray[0], kvSegmentArray[1]);
@@ -151,6 +157,9 @@ public class InstrumentLauncher {
      */
     private static Integer getDelay(Map<String, String> args, Integer defaultValue) {
         String property = System.getProperty(SIMULATOR_KEY_DELAY);
+        if (property == null || property.trim().length() == 0) {
+            property = args.get(SIMULATOR_KEY_DELAY);
+        }
         if (isNumeric(property)) {
             return Integer.valueOf(property);
         }
@@ -166,7 +175,10 @@ public class InstrumentLauncher {
      */
     private static TimeUnit getTimeUnit(Map<String, String> args, TimeUnit defaultValue) {
         String property = System.getProperty(SIMULATOR_KEY_UNIT);
-        property = trim(property);
+        if (property == null || property.trim().length() == 0) {
+            property = args.get(SIMULATOR_KEY_UNIT);
+        }
+        trim(property);
         for (TimeUnit tUnit : TimeUnit.values()) {
             if (tUnit.name().equalsIgnoreCase(property)) {
                 return tUnit;
@@ -193,8 +205,14 @@ public class InstrumentLauncher {
          * websphere 等 web 容器中
          */
         final long pid = RuntimeMXBeanUtils.getPid();
+        System.out.println("pid: " + pid);
         final String processName = RuntimeMXBeanUtils.getName();
         try {
+
+            // 加载ttl
+            ttlJarToSystemClassLoader(inst);
+            TtlAgent.premain(featureString, inst);
+
             /**
              * 如果是 jdk9及以上则采用外置进程方式attach 进程
              * 如果是 jdk9以下则使用内部方式attach 进程
@@ -203,6 +221,13 @@ public class InstrumentLauncher {
         } catch (Throwable e) {
             System.err.println("SIMULATOR: start Agent failed. \n" + getStackTraceAsString(e));
         }
+    }
+
+    private static void ttlJarToSystemClassLoader(Instrumentation instrumentation) throws IOException {
+        System.out.println("开始加载TTL到systemClassLoader中");
+        JarFile jarFile = new JarFile(DEFAULT_AGENT_HOME + File.separator + "bootstrap" + File.separator
+            + "transmittable-thread-local-2.12.1.jar");
+        instrumentation.appendToSystemClassLoaderSearch(jarFile);
     }
 
     private static String getStackTraceAsString(Throwable throwable) {
@@ -242,12 +267,22 @@ public class InstrumentLauncher {
      * @throws IllegalAccessException
      * @throws java.lang.reflect.InvocationTargetException
      */
-    private static void startInternal(final long pid, final String processName, Integer delay, TimeUnit unit, Instrumentation inst) throws MalformedURLException, ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, java.lang.reflect.InvocationTargetException {
+    private static void startInternal(final long pid, final String processName, Integer delay, TimeUnit unit,
+        Instrumentation inst)
+        throws MalformedURLException, ClassNotFoundException, NoSuchMethodException, InstantiationException,
+        IllegalAccessException, java.lang.reflect.InvocationTargetException {
+
+        System.out.println("pid: " + pid + " ,processName: " + processName + " ,delay: " + delay + " ,unit: " + unit);
+        System.out.println("DEFAULT_AGENT_HOME: " + DEFAULT_AGENT_HOME);
+
         File file = new File(DEFAULT_AGENT_HOME + File.separator + "core", "simulator-agent-core.jar");
-        AgentClassLoader agentClassLoader = new AgentClassLoader(new URL[]{file.toURI().toURL()});
-        Class coreLauncherOfClass = agentClassLoader.loadClass("com.shulie.instrument.simulator.agent.core.CoreLauncher");
-        Constructor constructor = coreLauncherOfClass.getConstructor(String.class, long.class, String.class, String.class, Instrumentation.class, ClassLoader.class);
-        Object coreLauncherOfInstance = constructor.newInstance(DEFAULT_AGENT_HOME, pid, processName, getTagFileName(), inst, InstrumentLauncher.class.getClassLoader());
+        AgentClassLoader agentClassLoader = new AgentClassLoader(new URL[] {file.toURI().toURL()});
+        Class coreLauncherOfClass = agentClassLoader.loadClass(
+            "com.shulie.instrument.simulator.agent.core.CoreLauncher");
+        Constructor constructor = coreLauncherOfClass.getConstructor(String.class, long.class, String.class,
+            String.class, Instrumentation.class, ClassLoader.class);
+        Object coreLauncherOfInstance = constructor.newInstance(DEFAULT_AGENT_HOME, pid, processName, getTagFileName(),
+            inst, InstrumentLauncher.class.getClassLoader());
 
         if (delay != null) {
             Method setDelayMethod = coreLauncherOfClass.getDeclaredMethod("setDelay", int.class);

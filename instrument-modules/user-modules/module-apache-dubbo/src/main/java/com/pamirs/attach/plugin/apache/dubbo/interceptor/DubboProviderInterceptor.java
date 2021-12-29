@@ -120,7 +120,7 @@ public class DubboProviderInterceptor extends TraceInterceptorAdaptor {
     private String getInterfaceName(Invocation invocation) {
         Invoker invoker = invocation.getInvoker();
         if (invoker != null) {
-            return invoker.getInterface().getCanonicalName();
+            return invoker.getInterface().getName();
         } else {
             return invocation.getAttachment("interface");
         }

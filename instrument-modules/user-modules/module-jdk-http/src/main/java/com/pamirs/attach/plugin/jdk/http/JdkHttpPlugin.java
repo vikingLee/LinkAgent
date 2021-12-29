@@ -4,9 +4,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * See the License for the specific language governing permissions and
@@ -31,7 +31,7 @@ import org.kohsuke.MetaInfServices;
  * Created by xiaobin on 2016/12/15.
  */
 @MetaInfServices(ExtensionModule.class)
-@ModuleInfo(id = "jdk-http", version = "1.0.0", author = "xiaobin@shulie.io",description = "jdk 内置的 http 客户端支持")
+@ModuleInfo(id = "jdk-http", version = "1.0.0", author = "xiaobin@shulie.io", description = "jdk 内置的 http 客户端支持")
 public class JdkHttpPlugin extends ModuleLifecycleAdapter implements ExtensionModule {
 
     @Override
@@ -40,7 +40,7 @@ public class JdkHttpPlugin extends ModuleLifecycleAdapter implements ExtensionMo
             @Override
             public void doEnhance(InstrumentClass target) {
                 target.includeBootstrap();
-                final InstrumentMethod connectMethod = target.getDeclaredMethod("connect");
+                final InstrumentMethod connectMethod = target.getDeclaredMethod("plainConnect");
                 connectMethod.addInterceptor(Listeners.of(HttpURLConnectionInterceptor.class, "JDK_HTTP_HTTPURLCONNECTION_SCOPE", ExecutionPolicy.BOUNDARY, Interceptors.SCOPE_CALLBACK));
 
 
@@ -49,15 +49,6 @@ public class JdkHttpPlugin extends ModuleLifecycleAdapter implements ExtensionMo
 
                 final InstrumentMethod getOutputStreamMethod = target.getDeclaredMethod("getOutputStream");
                 getOutputStreamMethod.addInterceptor(Listeners.of(HttpURLConnectionInterceptor.class, "JDK_HTTP_HTTPURLCONNECTION_SCOPE", ExecutionPolicy.BOUNDARY, Interceptors.SCOPE_CALLBACK));
-            }
-        });
-
-        enhanceTemplate.enhance(this, "sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection", new EnhanceCallback() {
-            @Override
-            public void doEnhance(InstrumentClass target) {
-                target.includeBootstrap();
-                final InstrumentMethod connectMethod = target.getDeclaredMethod("connect");
-                connectMethod.addInterceptor(Listeners.of(HttpURLConnectionInterceptor.class, "JDK_HTTP_HTTPS_URLCONNECTION_SCOPE", ExecutionPolicy.BOUNDARY, Interceptors.SCOPE_CALLBACK));
             }
         });
 

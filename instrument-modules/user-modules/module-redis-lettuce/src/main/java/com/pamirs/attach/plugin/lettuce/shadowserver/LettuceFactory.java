@@ -249,6 +249,8 @@ public class LettuceFactory extends AbstractRedisServerFactory<AbstractRedisClie
             newRedisUri.setVerifyPeer(redisURI.isVerifyPeer());
             if (null != database) {
                 newRedisUri.setDatabase(database);
+            }else {
+                newRedisUri.setDatabase(redisURI.getDatabase());
             }
 
         }

@@ -232,6 +232,7 @@ public class LettuceMasterSlaveFactory extends AbstractRedisServerFactory<Object
             List<RedisURI> performanceUris = new ArrayList<RedisURI>();
             RedisURI performanceUri = null;
             if (args[2] instanceof RedisURI) {
+                RedisURI busRedisURI = (RedisURI)args[2];
                 isSentinel = isSentinel(args[2], shadowRedisConfig);
                 String nodes = shadowRedisConfig.getNodes();
 
@@ -243,6 +244,8 @@ public class LettuceMasterSlaveFactory extends AbstractRedisServerFactory<Object
                         builder.withSentinel(innerSplitter[0], Integer.parseInt(innerSplitter[1]));
                         if (withDataBase) {
                             builder.withDatabase(pressureDatabase);
+                        } else {
+                            builder.withDatabase(busRedisURI.getDatabase());
                         }
                     }
                     builder.withSentinelMasterId(shadowRedisConfig.getMaster());
@@ -254,6 +257,8 @@ public class LettuceMasterSlaveFactory extends AbstractRedisServerFactory<Object
                         RedisURI uri = RedisURI.create(node);
                         if (withDataBase) {
                             uri.setDatabase(pressureDatabase);
+                        } else {
+                            uri.setDatabase(busRedisURI.getDatabase());
                         }
                         performanceUris.add(uri);
                     }

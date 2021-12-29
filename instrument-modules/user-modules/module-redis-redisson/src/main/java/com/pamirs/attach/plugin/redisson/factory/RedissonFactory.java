@@ -243,6 +243,8 @@ public class RedissonFactory extends AbstractRedisServerFactory {
             }
             if (database != null) {
                 newConfig.useSingleServer().setDatabase(database);
+            } else {
+                newConfig.useSingleServer().setDatabase(singleServerConfig.getDatabase());
             }
         } else if (clusterServersConfig != null) {
             newConfig.useClusterServers()
@@ -277,6 +279,8 @@ public class RedissonFactory extends AbstractRedisServerFactory {
             }
             if (database != null) {
                 newConfig.useSentinelServers().setDatabase(database);
+            } else {
+                newConfig.useSingleServer().setDatabase(sentinelServersConfig.getDatabase());
             }
         } else if (replicatedServersConfig != null) {
             newConfig.useReplicatedServers()
@@ -286,6 +290,8 @@ public class RedissonFactory extends AbstractRedisServerFactory {
             }
             if (database != null) {
                 newConfig.useReplicatedServers().setDatabase(database);
+            } else {
+                newConfig.useSingleServer().setDatabase(replicatedServersConfig.getDatabase());
             }
         } else if (masterSlaveServersConfig != null) {
             newConfig.useMasterSlaveServers()
@@ -293,6 +299,8 @@ public class RedissonFactory extends AbstractRedisServerFactory {
             newConfig.useMasterSlaveServers().addSlaveAddress(nodesArrays);
             if (database != null) {
                 newConfig.useMasterSlaveServers().setDatabase(database);
+            } else {
+                newConfig.useSingleServer().setDatabase(masterSlaveServersConfig.getDatabase());
             }
             if (passwd != null) {
                 newConfig.useMasterSlaveServers().setPassword(passwd);

@@ -87,7 +87,8 @@ public class JedisSentinelFactory extends AbstractRedisServerFactory<JedisSentin
 
                 password = StringUtil.isEmpty(password) ? null : password;
 
-                int database = shadowConfig.getDatabase() == null ? 0 : shadowConfig.getDatabase();
+                int database = shadowConfig.getDatabase() == null ?
+                    Reflect.on(datasource).<Integer>get("database") : shadowConfig.getDatabase();
 
                 pressureJedisPool = new JedisSentinelPool(masterName, nodes, poolConfig,
                         2000, password, database);

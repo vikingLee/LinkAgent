@@ -42,9 +42,9 @@ public class JedisPipelineBaseInterceptor extends ParametersWrapperInterceptorAd
             return args;
         }
 
-        if (RedisClientMediator.isShadowDb()) {
+        /*if (RedisClientMediator.isShadowDb()) {
             return args;
-        }
+        }*/
 
         Collection<String> whiteList = GlobalConfig.getInstance().getCacheKeyWhiteList();
 

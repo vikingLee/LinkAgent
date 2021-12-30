@@ -39,9 +39,9 @@ public class LettuceMethodFirstKeyAndOtherKeysInterceptor extends ParametersWrap
             return args;
         }
 
-        if (RedisClientMediator.isShadowDb()) {
+        /*if (RedisClientMediator.isShadowDb()) {
             return args;
-        }
+        }*/
 
         if (args == null || args.length == 0) {
             return args;

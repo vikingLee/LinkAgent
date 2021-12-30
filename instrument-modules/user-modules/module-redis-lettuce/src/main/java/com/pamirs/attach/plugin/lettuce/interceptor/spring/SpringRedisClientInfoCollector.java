@@ -118,7 +118,8 @@ public class SpringRedisClientInfoCollector extends ResultInterceptorAdaptor {
                             InetSocketAddress inetSocketAddress = channel.remoteAddress();
                             String host = inetSocketAddress.getAddress().getHostName();
                             String port = String.valueOf(inetSocketAddress.getPort());
-                            sentinelRemoteAddress.add(host.concat(":").concat(port));
+                            sentinelRemoteAddress.add(host.concat(":").concat(port).concat("-").concat(
+                                String.valueOf(database)));
                         }
                     }
 
@@ -155,7 +156,7 @@ public class SpringRedisClientInfoCollector extends ResultInterceptorAdaptor {
                 } catch (NoSuchElementException e) {
                     //
                 }
-                String node = host.concat(":").concat(String.valueOf(port));
+                String node = host.concat(":").concat(String.valueOf(port)).concat("-").concat(String.valueOf(db));
 
                 ResourceManager.set(new Attachment(Arrays.asList(node)
                         , "redis-lettuce"

@@ -48,9 +48,9 @@ public class MJedisInterceptor extends ParametersWrapperInterceptorAdaptor {
             return args;
         }
 
-        if (RedisClientMediator.isShadowDb()) {
+        /*if (RedisClientMediator.isShadowDb()) {
             return args;
-        }
+        }*/
 
         String methodName = advice.getBehavior().getName();
 

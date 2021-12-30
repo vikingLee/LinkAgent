@@ -61,9 +61,9 @@ public class RedissonMethodInterceptor extends ModificationInterceptorAdaptor {
             return args;
         }
 
-        if (GlobalConfig.getInstance().isShadowDbRedisServer()) {
+        /*if (GlobalConfig.getInstance().isShadowDbRedisServer()) {
             return args;
-        }
+        }*/
         String name = (String) args[0];
         if (Pradar.isClusterTestPrefix(name)) {
             return args;

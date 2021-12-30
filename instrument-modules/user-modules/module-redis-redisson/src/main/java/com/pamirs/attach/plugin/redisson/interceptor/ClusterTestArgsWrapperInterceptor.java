@@ -28,9 +28,9 @@ import java.util.*;
  */
 public abstract class ClusterTestArgsWrapperInterceptor extends ParametersWrapperInterceptorAdaptor {
     protected Object toClusterTestKey(Object key) {
-        if (GlobalConfig.getInstance().isShadowDbRedisServer()) {
+       /* if (GlobalConfig.getInstance().isShadowDbRedisServer()) {
             return key;
-        }
+        }*/
         if (key == null) {
             return null;
         }

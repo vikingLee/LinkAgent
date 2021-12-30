@@ -69,6 +69,7 @@ public class LettuceMethodInterceptor extends TraceInterceptorAdaptor {
         spanRecord.setMethod(getMethodNameExt(args));
         spanRecord.setRequest(toArgs(args));
         spanRecord.setMiddlewareName(LettuceConstants.MIDDLEWARE_NAME);
+        advice.attach(spanRecord.getCallbackMsg());
         return spanRecord;
     }
 
@@ -117,22 +118,22 @@ public class LettuceMethodInterceptor extends TraceInterceptorAdaptor {
     public SpanRecord afterTrace(Advice advice) {
         SpanRecord spanRecord = new SpanRecord();
         spanRecord.setMiddlewareName(LettuceConstants.MIDDLEWARE_NAME);
-        spanRecord.setCallbackMsg(LettuceConstants.PLUGIN_NAME);
+        //spanRecord.setCallbackMsg(LettuceConstants.PLUGIN_NAME);
         /**
          * 附加属性
          */
-        ext();
+        ext(advice.<String>attachment());
         return spanRecord;
     }
 
-    void ext() {
+    void ext(String database) {
         try {
             if (Pradar.isClusterTest()) {
                 return;
             }
             String index = Pradar.getInvokeContext().getRemoteIp()
                 .concat(":")
-                .concat(Pradar.getInvokeContext().getPort());
+                .concat(Pradar.getInvokeContext().getPort()).concat("-").concat(database);
 
             Object attachment =
                 ResourceManager.get(index, LettuceConstants.MIDDLEWARE_NAME);
@@ -155,7 +156,7 @@ public class LettuceMethodInterceptor extends TraceInterceptorAdaptor {
         /**
          * 附加属性
          */
-        ext();
+        ext(advice.<String>attachment());
         return spanRecord;
     }
 
@@ -175,6 +176,7 @@ public class LettuceMethodInterceptor extends TraceInterceptorAdaptor {
                     RedisURI redisUri = Reflect.on(provider).get("initialRedisUri");
                     spanRecord.setRemoteIp(redisUri.getHost());
                     spanRecord.setPort(redisUri.getPort());
+                    spanRecord.setCallbackMsg(String.valueOf(redisUri.getDatabase()));
                 } catch (Throwable thx) {
                     spanRecord.setRemoteIp(LettuceConstants.ADDRESS_UNKNOW);
                 }
@@ -190,6 +192,7 @@ public class LettuceMethodInterceptor extends TraceInterceptorAdaptor {
                     RedisURI current = sentinels.get(0);
                     spanRecord.setRemoteIp(current.getHost());
                     spanRecord.setPort(current.getPort());
+                    spanRecord.setCallbackMsg(String.valueOf(redisURI.getDatabase()));
                 } catch (Throwable thx) {
                     spanRecord.setRemoteIp(LettuceConstants.ADDRESS_UNKNOW);
                 }

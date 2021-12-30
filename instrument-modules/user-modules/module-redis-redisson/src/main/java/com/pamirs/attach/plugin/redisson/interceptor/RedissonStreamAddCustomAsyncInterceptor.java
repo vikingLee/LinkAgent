@@ -37,9 +37,9 @@ public class RedissonStreamAddCustomAsyncInterceptor extends ClusterTestArgsWrap
         if (!Pradar.isClusterTest()) {
             return args;
         }
-        if (GlobalConfig.getInstance().isShadowDbRedisServer()) {
+        /*if (GlobalConfig.getInstance().isShadowDbRedisServer()) {
             return args;
-        }
+        }*/
         if (args.length < 2) {
             return args;
         }

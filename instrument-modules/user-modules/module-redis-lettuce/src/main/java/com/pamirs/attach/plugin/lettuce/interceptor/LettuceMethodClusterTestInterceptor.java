@@ -44,9 +44,9 @@ public abstract class LettuceMethodClusterTestInterceptor extends ParametersWrap
             return args;
         }
 
-        if (RedisClientMediator.isShadowDb()) {
+        /*if (RedisClientMediator.isShadowDb()) {
             return args;
-        }
+        }*/
 
         int[] indexes = getKeyIndexes();
         if (indexes == null || indexes.length == 0) {

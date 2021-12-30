@@ -49,9 +49,9 @@ public class RedisDataCheckInterceptor extends AroundInterceptor {
             return;
         }
 
-        if (RedisClientMediator.isShadowDb()) {
+        /*if (RedisClientMediator.isShadowDb()) {
             return;
-        }
+        }*/
 
         String methodName = advice.getBehaviorName();
 

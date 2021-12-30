@@ -77,9 +77,9 @@ public class LettuceMethodMigrateInterceptor extends ParametersWrapperIntercepto
             return args;
         }
 
-        if (RedisClientMediator.isShadowDb()) {
+        /*if (RedisClientMediator.isShadowDb()) {
             return args;
-        }
+        }*/
 
         if (args == null || args.length != 5) {
             return args;

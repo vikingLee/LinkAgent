@@ -4,9 +4,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * See the License for the specific language governing permissions and
@@ -66,14 +66,14 @@ public class FeignMockInterceptor extends TraceInterceptorAdaptor {
             logger.info("[debug] feign method =null , args: [{}]", JSON.toJSONString(args));
             return null;
         }
-        Object [] arg = (Object[]) args[2];
+        Object[] arg = (Object[]) args[2];
         SpanRecord record = new SpanRecord();
         record.setService(method.getDeclaringClass().getName());
         record.setMethod(method.getName() + getParameterTypesString(method.getParameterTypes()));
         if (arg != null) {
             record.setRequestSize(arg.length);
         }
-        if(!Pradar.isClusterTest()){
+        if (Pradar.isClusterTest()) {
             record.setPassedCheck(true);
         }
         return record;
@@ -122,7 +122,7 @@ public class FeignMockInterceptor extends TraceInterceptorAdaptor {
             logger.info("[debug] thread {} feign method =null , args: [{}]", Thread.currentThread(), JSON.toJSONString(args));
             return null;
         }
-        Object [] arg = (Object[]) args[2];
+        Object[] arg = (Object[]) args[2];
         SpanRecord record = new SpanRecord();
         record.setService(method.getDeclaringClass().getName());
         record.setMethod(method.getName() + getParameterTypesString(method.getParameterTypes()));

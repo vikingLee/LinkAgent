@@ -41,6 +41,7 @@ public class KafkaConstants {
     public final static String REFLECT_FIELD_THIS_OR_PARENT_CONTAINER = "thisOrParentContainer";
     public final static String REFLECT_FIELD_TOPICS = "topics";
     public final static String REFLECT_FIELD_TOPIC = "topic";
+    public final static String REFLECT_FIELD_TOPIC_PATTERN = "topicPattern";
     public final static String REFLECT_FIELD_CONSUMER_FACTORY = "consumerFactory";
     public final static String REFLECT_FIELD_PRODUCER_CONFIG = "producerConfig";
 
@@ -67,6 +68,7 @@ public class KafkaConstants {
     public final static String REFLECT_METHOD_SET_POLL_TIMEOUT = "setPollTimeout";
 
     public final static String REFLECT_METHOD_GET_TOPICS = "getTopics";
+    public final static String REFLECT_METHOD_GET_TOPIC_PATTERN = "getTopicPattern";
     public final static String REFLECT_METHOD_GET_CONCURRENCY = "getConcurrency";
 
     public final static String REFLECT_METHOD_STOP = "stop";

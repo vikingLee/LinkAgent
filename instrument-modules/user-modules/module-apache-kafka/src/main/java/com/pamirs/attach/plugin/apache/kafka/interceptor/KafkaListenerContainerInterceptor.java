@@ -46,6 +46,7 @@ import org.springframework.kafka.listener.KafkaMessageListenerContainer;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * 创建影子Consumer
@@ -139,15 +140,6 @@ public class KafkaListenerContainerInterceptor extends AroundInterceptor {
             groupId = Reflect.on(containerProperties).call(KafkaConstants.REFLECT_METHOD_GET_GROUP_ID).get();
         } catch (ReflectException e) {
         }
-        /**
-         * 如果是影子 topic，则不需要再创建对应的消费者
-         */
-        List<String> topicList = getShadowTopics(containerProperties, groupId);
-        if (CollectionUtils.isEmpty(topicList)) {
-            logger.warn("SIMULATOR: shadow kafka consumer config not found  for groupId : {} containerProperties : {}",
-                    groupId, containerProperties);
-            return;
-        }
         Object messageListener = null;
         try {
             messageListener = Reflect.on(containerProperties).call(KafkaConstants.REFLECT_METHOD_GET_MESSAGE_LISTENER).get();
@@ -156,16 +148,34 @@ public class KafkaListenerContainerInterceptor extends AroundInterceptor {
 
         if (null == messageListener) {
             logger.warn("SIMULATOR: kafka consumer register error. got a null messageListener from {}.",
-                    containerProperties);
+                containerProperties);
             return;
         }
-
         Object ptObject = null;
-        try {
-            ptObject = Reflect.on(containerProperties.getClass()).create(new Object[]{topicList.toArray(new String[0])})
+        /**
+         * 如果是影子 topic，则不需要再创建对应的消费者
+         */
+        List<String> topicList = getShadowTopics(containerProperties, groupId);
+        Pattern shadowTopicPattern = null;
+        if (!CollectionUtils.isEmpty(topicList)) {
+            try {
+                ptObject = Reflect.on(containerProperties.getClass()).create(new Object[]{topicList.toArray(new String[0])})
                     .get();
-        } catch (ReflectException e) {
+            } catch (ReflectException e) {
+                logger.error("SIMULATOR: create containerProperties by topicList fail", e);
+            }
+        }else {
+            logger.warn("SIMULATOR: shadow kafka consumer config topicList not found  for groupId : {} containerProperties : {}",
+                groupId, containerProperties);
+            shadowTopicPattern = getShadowTopicPattern(containerProperties, groupId);
+            try {
+                ptObject = Reflect.on(containerProperties.getClass()).create(shadowTopicPattern)
+                    .get();
+            } catch (ReflectException e) {
+                logger.error("SIMULATOR: create containerProperties by topicPattern fail", e);
+            }
         }
+
         if (null == ptObject) {
             logger.warn("SIMULATOR: kafka consumer register error. got a null messageListener from {}.",
                     containerProperties);
@@ -230,8 +240,9 @@ public class KafkaListenerContainerInterceptor extends AroundInterceptor {
         PradarSpringUtil.getBeanFactory().getBean(beanName);
         ConfigCache.setInited(advice.getTarget());
         if (logger.isInfoEnabled()) {
-            logger.info("SIMULATOR: kafka consumer register successful!. groupId : {}, topic : {}",
-                    Pradar.addClusterTestPrefix(groupId), topicList);
+            logger.info("SIMULATOR: kafka consumer register successful!. groupId : {}, topic : {}, "
+                    + "shadowTopicPattern : {}",
+                    Pradar.addClusterTestPrefix(groupId), topicList, shadowTopicPattern);
         }
     }
 
@@ -405,4 +416,38 @@ public class KafkaListenerContainerInterceptor extends AroundInterceptor {
                 .report();
 
     }
+
+    /**
+     * 获取topicPattern
+     *
+     * @param object
+     * @return
+     */
+    private Pattern getShadowTopicPattern(Object object, String groupId) {
+        Pattern topicPattern = null;
+        try {
+            topicPattern = Reflect.on(object).call(KafkaConstants.REFLECT_METHOD_GET_TOPIC_PATTERN).get();
+        } catch (ReflectException e) {
+        }
+        if (topicPattern == null) {
+            try {
+                topicPattern = Reflect.on(object).get(KafkaConstants.REFLECT_FIELD_TOPIC_PATTERN);
+            } catch (ReflectException e) {
+            }
+        }
+        if (topicPattern != null) {
+            /**
+             * topic 都需要在白名单中配置好才可以启动
+             */
+            final String pattern = topicPattern.pattern();
+            if (StringUtils.isNotBlank(pattern) && !Pradar.isClusterTestPrefix(pattern)) {
+                if (PradarSwitcher.whiteListSwitchOn() && GlobalConfig.getInstance().getMqWhiteList().contains(pattern)
+                    || GlobalConfig.getInstance().getMqWhiteList().contains(pattern + '#' + groupId)) {
+                    return Pattern.compile(Pradar.addClusterTestPrefix(pattern));
+                }
+            }
+        }
+        return topicPattern;
+    }
+
 }

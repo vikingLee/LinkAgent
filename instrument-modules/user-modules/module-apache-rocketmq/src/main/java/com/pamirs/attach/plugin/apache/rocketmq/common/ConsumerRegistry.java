@@ -14,6 +14,8 @@
  */
 package com.pamirs.attach.plugin.apache.rocketmq.common;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -216,36 +218,158 @@ public class ConsumerRegistry {
         defaultMQPushConsumer.setConsumerGroup(Pradar.addClusterTestPrefix(businessConsumer.getConsumerGroup()));
         defaultMQPushConsumer.setConsumeFromWhere(businessConsumer.getConsumeFromWhere());
         defaultMQPushConsumer.setPullThresholdForQueue(businessConsumer.getPullThresholdForQueue());
-        defaultMQPushConsumer.setPullThresholdSizeForTopic(businessConsumer.getPullThresholdSizeForTopic());
+        final List<String> missFields = new ArrayList<String>();
+        try {
+            defaultMQPushConsumer.setPullThresholdSizeForTopic(businessConsumer.getPullThresholdSizeForTopic());
+        } catch (Throwable e){
+            missFields.add(e.getMessage());
+        }
+        try {
         defaultMQPushConsumer.setPullThresholdSizeForQueue(businessConsumer.getPullThresholdSizeForQueue());
+        } catch (Throwable e){
+            missFields.add(e.getMessage());
+        }
+        try {
         defaultMQPushConsumer.setPullBatchSize(businessConsumer.getPullBatchSize());
+        } catch (Throwable e){
+            missFields.add(e.getMessage());
+        }
+        try {
         defaultMQPushConsumer.setConsumeMessageBatchMaxSize(businessConsumer.getConsumeMessageBatchMaxSize());
+        } catch (Throwable e){
+            missFields.add(e.getMessage());
+        }
+        try {
         defaultMQPushConsumer.setConsumeThreadMax(businessConsumer.getConsumeThreadMax());
+        } catch (Throwable e){
+            missFields.add(e.getMessage());
+        }
+        try {
         defaultMQPushConsumer.setConsumeThreadMin(businessConsumer.getConsumeThreadMin());
+        } catch (Throwable e){
+            missFields.add(e.getMessage());
+        }
+        try {
         defaultMQPushConsumer.setInstanceName(Pradar.addClusterTestPrefix(businessConsumer.getInstanceName()));
+        } catch (Throwable e){
+            missFields.add(e.getMessage());
+        }
+        try {
         defaultMQPushConsumer.setAdjustThreadPoolNumsThreshold(businessConsumer.getAdjustThreadPoolNumsThreshold());
+        } catch (Throwable e){
+            missFields.add(e.getMessage());
+        }
+        try {
         defaultMQPushConsumer.setAllocateMessageQueueStrategy(businessConsumer.getAllocateMessageQueueStrategy());
+        } catch (Throwable e){
+            missFields.add(e.getMessage());
+        }
+        try {
         defaultMQPushConsumer.setConsumeConcurrentlyMaxSpan(businessConsumer.getConsumeConcurrentlyMaxSpan());
+        } catch (Throwable e){
+            missFields.add(e.getMessage());
+        }
+        try {
         defaultMQPushConsumer.setConsumeTimestamp(businessConsumer.getConsumeTimestamp());
+        } catch (Throwable e){
+            missFields.add(e.getMessage());
+        }
+        try {
         defaultMQPushConsumer.setMessageModel(businessConsumer.getMessageModel());
+        } catch (Throwable e){
+            missFields.add(e.getMessage());
+        }
+        try {
         defaultMQPushConsumer.setMessageListener(businessConsumer.getMessageListener());
+        } catch (Throwable e){
+            missFields.add(e.getMessage());
+        }
+        try {
         defaultMQPushConsumer.setOffsetStore(businessConsumer.getOffsetStore());
+        } catch (Throwable e){
+            missFields.add(e.getMessage());
+        }
+        try {
         defaultMQPushConsumer.setPullInterval(businessConsumer.getPullInterval());
+        } catch (Throwable e){
+            missFields.add(e.getMessage());
+        }
+        try {
         defaultMQPushConsumer.setSubscription(businessConsumer.getSubscription());
+        } catch (Throwable e){
+            missFields.add(e.getMessage());
+        }
+        try {
         defaultMQPushConsumer.setUnitMode(businessConsumer.isUnitMode());
+        } catch (Throwable e){
+            missFields.add(e.getMessage());
+        }
+        try {
         defaultMQPushConsumer.setClientCallbackExecutorThreads(businessConsumer.getClientCallbackExecutorThreads());
+        } catch (Throwable e){
+            missFields.add(e.getMessage());
+        }
+        try {
         defaultMQPushConsumer.setClientIP(businessConsumer.getClientIP());
+        } catch (Throwable e){
+            missFields.add(e.getMessage());
+        }
+        try {
         defaultMQPushConsumer.setHeartbeatBrokerInterval(businessConsumer.getHeartbeatBrokerInterval());
+        } catch (Throwable e){
+            missFields.add(e.getMessage());
+        }
+        try {
         defaultMQPushConsumer.setPersistConsumerOffsetInterval(businessConsumer.getPersistConsumerOffsetInterval());
+        } catch (Throwable e){
+            missFields.add(e.getMessage());
+        }
+        try {
         defaultMQPushConsumer.setPostSubscriptionWhenPull(businessConsumer.isPostSubscriptionWhenPull());
+        } catch (Throwable e){
+            missFields.add(e.getMessage());
+        }
+        try {
         defaultMQPushConsumer.setUnitName(businessConsumer.getUnitName());
+        } catch (Throwable e){
+            missFields.add(e.getMessage());
+        }
+        try {
         defaultMQPushConsumer.setUnitMode(businessConsumer.isUnitMode());
+        } catch (Throwable e){
+            missFields.add(e.getMessage());
+        }
+        try {
         defaultMQPushConsumer.setMaxReconsumeTimes(businessConsumer.getMaxReconsumeTimes());
+        } catch (Throwable e){
+            missFields.add(e.getMessage());
+        }
+        try {
         defaultMQPushConsumer.setSuspendCurrentQueueTimeMillis(businessConsumer.getSuspendCurrentQueueTimeMillis());
+        } catch (Throwable e){
+            missFields.add(e.getMessage());
+        }
+        try {
         defaultMQPushConsumer.setConsumeTimeout(businessConsumer.getConsumeTimeout());
+        } catch (Throwable e){
+            missFields.add(e.getMessage());
+        }
+        try {
         defaultMQPushConsumer.setUseTLS(businessConsumer.isUseTLS());
+        } catch (Throwable e){
+            missFields.add(e.getMessage());
+        }
+        try {
         defaultMQPushConsumer.setLanguage(businessConsumer.getLanguage());
+        } catch (Throwable e){
+            missFields.add(e.getMessage());
+        }
+        try {
         defaultMQPushConsumer.setVipChannelEnabled(businessConsumer.isVipChannelEnabled());
+        } catch (Throwable e){
+            missFields.add(e.getMessage());
+        }
+
         MessageListener messageListener = businessConsumer.getMessageListener();
         if (messageListener != null) {
             if (messageListener instanceof MessageListenerConcurrently) {
@@ -253,6 +377,10 @@ public class ConsumerRegistry {
             } else if (messageListener instanceof MessageListenerOrderly) {
                 defaultMQPushConsumer.registerMessageListener((MessageListenerOrderly)messageListener);
             }
+        }
+
+        if(!missFields.isEmpty()){
+            logger.warn("[RocketMQ] miss some fields: {}", Arrays.toString(missFields.toArray()));
         }
 
         defaultMQPushConsumer.getDefaultMQPushConsumerImpl().registerConsumeMessageHook(new PushConsumeMessageHookImpl());
@@ -326,6 +454,7 @@ public class ConsumerRegistry {
         Set<String> mqWhiteList = GlobalConfig.getInstance().getMqWhiteList();
         String key = topic + "#" + businessConsumer.getConsumerGroup();
         if (PradarSwitcher.whiteListSwitchOn() && !mqWhiteList.contains(key) && !mqWhiteList.contains(topic)) {
+            logger.warn("[RockemtMQ] {} not in WhiteList:{}", key, Arrays.toString(mqWhiteList.toArray()));
             return false;
         }
         return true;

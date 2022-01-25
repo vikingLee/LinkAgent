@@ -17,18 +17,22 @@ package com.pamirs.pradar.pressurement.datasource;
 import com.pamirs.pradar.internal.config.ShadowDatabaseConfig;
 import com.pamirs.pradar.pressurement.agent.shared.service.GlobalConfig;
 import com.pamirs.pradar.pressurement.datasource.util.DbUrlUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * @author xiaobin.zfb
  * @since 2020/9/10 6:00 下午
  */
 public final class DatabaseUtils {
-
+    private static Logger logger = LoggerFactory.getLogger(DatabaseUtils.class.getName());
     //判断当前数据源是否是影子库压测
     public static Map<String, String> getUrlUsername(Connection jdbcConnecton) throws SQLException {
         Map<String, String> map = new HashMap<String, String>();
@@ -62,6 +66,18 @@ public final class DatabaseUtils {
 
         shadowDatabaseConfig = GlobalConfig.getInstance().getShadowDatabaseConfig(key);
         if (shadowDatabaseConfig == null) {
+            for (Entry<String, ShadowDatabaseConfig> entry : GlobalConfig.getInstance()
+                .getShadowDatasourceConfigs().entrySet()) {
+                final String ptKey = entry.getKey();
+                if(ptKey.contains("|")){
+                    if(ptKey.split("\\|")[0].equals(key)){
+                        return entry.getValue().isShadowDatabase();
+                    }
+                }
+            }
+            logger.warn(String.format("[JNDI]can not find ShadowDatabaseConfig!,key is [%s],shadowDatabaseConfig:key [%s],value: [%s]", key,
+                Arrays.toString(GlobalConfig.getInstance().getShadowDatasourceConfigs().keySet().toArray()),
+                Arrays.toString(GlobalConfig.getInstance().getShadowDatasourceConfigs().values().toArray())));
             return false;
         }
         return shadowDatabaseConfig.isShadowDatabase();

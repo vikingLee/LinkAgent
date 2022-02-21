@@ -16,6 +16,8 @@ package com.pamirs.attach.plugin.apache.rocketmq.common;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -43,8 +45,10 @@ import org.apache.rocketmq.client.consumer.listener.MessageListener;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerOrderly;
 import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.client.impl.MQClientAPIImpl;
 import org.apache.rocketmq.client.impl.consumer.RebalanceImpl;
 import org.apache.rocketmq.common.UtilAll;
+import org.apache.rocketmq.common.protocol.body.TopicList;
 import org.apache.rocketmq.common.protocol.heartbeat.SubscriptionData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -155,6 +159,7 @@ public class ConsumerRegistry {
         } else {
             try {
                 shadowConsumer.start();
+                logger.info(String.format("[Apache-RocketMQ] shadowConsumer %s start successfully.", shadowConsumer.getConsumerGroup()));
             } catch (Throwable e) {
                 ErrorReporter.buildError()
                     .setErrorType(ErrorTypeEnum.MQ)
@@ -176,7 +181,7 @@ public class ConsumerRegistry {
         }
         return true;
     }
-
+    private static Map<DefaultMQPushConsumer, Long> lastWhitelistWarnTimes = new ConcurrentWeakHashMap<DefaultMQPushConsumer, Long>();
     private static String getInstanceName() {
         String instanceName = System.getProperty("rocketmq.client.name", "DEFAULT");
         if (instanceName.equals("DEFAULT")) {
@@ -369,12 +374,14 @@ public class ConsumerRegistry {
         }
 
         if(!missFields.isEmpty()){
-            logger.warn("[RocketMQ] miss some fields: {}", Arrays.toString(missFields.toArray()));
+            logger.warn("[Apache-RocketMQ] miss some fields: {}", Arrays.toString(missFields.toArray()));
         }
 
         ConcurrentMap<String, SubscriptionData> map = businessConsumer.getDefaultMQPushConsumerImpl().getSubscriptionInner();
+        if (checkMustBeforeCreateShadowTopic(businessConsumer, map)) {return null;}
 
         boolean hasSubscribe = false;
+        final Set<String> subscribeTopic = new HashSet<String>();
         if (map != null) {
             for (Map.Entry<String, SubscriptionData> entry : map.entrySet()) {
                 SubscriptionData subscriptionData = entry.getValue();
@@ -421,13 +428,68 @@ public class ConsumerRegistry {
                     }
                 }
                 hasSubscribe = true;
+                subscribeTopic.add(Pradar.addClusterTestPrefix(topic));
             }
 
             if (hasSubscribe) {
+                logger.info(String.format("[Apache-RocketMQ] shadow consumer %s create successfully, topic: %s",
+                    defaultMQPushConsumer.getConsumerGroup(),Arrays.toString(subscribeTopic.toArray())));
                 return defaultMQPushConsumer;
             }
         }
         return null;
+    }
+
+    private static boolean checkMustBeforeCreateShadowTopic(DefaultMQPushConsumer businessConsumer,
+        ConcurrentMap<String, SubscriptionData> map) {
+        Map<String, SubscriptionData> topicsInWhiteList = new HashMap<String, SubscriptionData>();
+        if (map != null) {
+            Long lastWhitelistWarnTime = lastWhitelistWarnTimes.get(businessConsumer);
+            if(lastWhitelistWarnTime == null){
+                lastWhitelistWarnTime = 0L;
+            }
+            long now = System.currentTimeMillis();
+            long passTime = now - lastWhitelistWarnTime;
+            for (Map.Entry<String, SubscriptionData> entry : map.entrySet()) {
+                String topic = entry.getKey();
+                if (!isPermitInitConsumer(businessConsumer, topic)) {
+                    if (passTime > 5000) {
+                        logger.warn("[Apache-RocketMQ] topic : {} is not in whitelist!", topic);
+                        lastWhitelistWarnTimes.put(businessConsumer, now);
+                    }
+                    continue;
+                }
+                topicsInWhiteList.put(entry.getKey(), entry.getValue());
+            }
+        }
+        if (topicsInWhiteList.isEmpty()) {
+            return true;
+        }
+        try {
+            final MQClientAPIImpl mqClientAPIImpl = businessConsumer.getDefaultMQPushConsumerImpl()
+                .getmQClientFactory().getMQClientAPIImpl();
+            final TopicList topicListFromNameServer = mqClientAPIImpl
+                .getTopicListFromNameServer(5000L);
+            final Set<String> topicList = topicListFromNameServer.getTopicList();
+            final Set<String> unCreateShadowTopic = new HashSet<String>();
+            for (String topicInWhiteList : topicsInWhiteList.keySet()) {
+                if(!topicList.contains(Pradar.addClusterTestPrefix(topicInWhiteList))){
+                    unCreateShadowTopic.add(Pradar.addClusterTestPrefix(topicInWhiteList));
+                }
+            }
+            boolean notReady = false;
+            if(!unCreateShadowTopic.isEmpty()){
+                logger.error(String.format("[Apache-RocketMQ] must create shadow topic: %s",
+                    Arrays.toString(unCreateShadowTopic.toArray())));
+                notReady = true;
+            }
+            if(notReady) {
+                return true;
+            }
+        } catch (Throwable e) {
+            logger.error("[Apache-RocketMQ] pull topic info fail" ,e);
+        }
+        return false;
     }
 
     /**
@@ -441,7 +503,7 @@ public class ConsumerRegistry {
         Set<String> mqWhiteList = GlobalConfig.getInstance().getMqWhiteList();
         String key = topic + "#" + businessConsumer.getConsumerGroup();
         if (PradarSwitcher.whiteListSwitchOn() && !mqWhiteList.contains(key) && !mqWhiteList.contains(topic)) {
-            logger.warn("[RockemtMQ] {} not in WhiteList:{}", key, Arrays.toString(mqWhiteList.toArray()));
+//            logger.warn("[RockemtMQ] {} not in WhiteList:{}", key, Arrays.toString(mqWhiteList.toArray()));
             return false;
         }
         return true;

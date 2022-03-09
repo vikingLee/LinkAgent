@@ -149,6 +149,8 @@ public class HttpClientv3MethodInterceptor extends TraceInterceptorAdaptor {
             if (Pradar.isClusterTest()) {
                 throw new PressureMeasureError(t);
             }
+        }finally{
+            Pradar.response(Reflect.on(args[1]).get("responseBody"));
         }
     }
 

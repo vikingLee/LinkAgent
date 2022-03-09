@@ -8,10 +8,13 @@ import com.pamirs.pradar.pressurement.ClusterTestUtils;
 import com.pamirs.pradar.pressurement.mock.JsonMockStrategy;
 import com.pamirs.pradar.pressurement.mock.MockStrategy;
 import com.shulie.instrument.simulator.api.ProcessControlException;
+import com.shulie.instrument.simulator.api.ProcessController;
 import com.shulie.instrument.simulator.api.listener.ext.Advice;
 
+import java.io.ByteArrayInputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.Charset;
 
 /**
  * @author jiangjibo
@@ -41,13 +44,28 @@ public class HttpURLConnectionGetInputStreamInterceptor extends HttpURLConnectio
             return;
         }
 
-        config.addArgs(PradarService.PRADAR_WHITE_LIST_CHECK, whiteList);
-        // 白名单需要的信息
-        config.addArgs("url", fullPath);
-        // mock转发需要信息
-        config.addArgs("request", request);
-        config.addArgs("method", "url");
-        config.addArgs("isInterface", Boolean.FALSE);
-        config.getStrategy().processBlock(advice.getBehavior().getReturnType(), advice.getClassLoader(), config);
+        if (strategy instanceof JsonMockStrategy) {
+            fixJsonStrategy.processBlock(advice.getBehavior().getReturnType(), advice.getClassLoader(), config);
+        } else {
+            config.addArgs(PradarService.PRADAR_WHITE_LIST_CHECK, whiteList);
+            // 白名单需要的信息
+            config.addArgs("url", fullPath);
+            // mock转发需要信息
+            config.addArgs("request", request);
+            config.addArgs("method", "url");
+            config.addArgs("isInterface", Boolean.FALSE);
+            config.getStrategy().processBlock(advice.getBehavior().getReturnType(), advice.getClassLoader(), config);
+        }
+
     }
+
+    private static ExecutionStrategy fixJsonStrategy =
+            new JsonMockStrategy() {
+                @Override
+                public Object processBlock(Class returnType, ClassLoader classLoader, Object params) throws ProcessControlException {
+                    ProcessController.returnImmediately(returnType, new ByteArrayInputStream(((MatchConfig) params).getScriptContent().getBytes(Charset.forName("utf-8"))));
+                    return true;
+                }
+            };
+
 }

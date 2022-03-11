@@ -46,16 +46,16 @@ public class HttpURLConnectionGetInputStreamInterceptor extends HttpURLConnectio
 
         if (strategy instanceof JsonMockStrategy) {
             fixJsonStrategy.processBlock(advice.getBehavior().getReturnType(), advice.getClassLoader(), config);
-        } else {
-            config.addArgs(PradarService.PRADAR_WHITE_LIST_CHECK, whiteList);
-            // 白名单需要的信息
-            config.addArgs("url", fullPath);
-            // mock转发需要信息
-            config.addArgs("request", request);
-            config.addArgs("method", "url");
-            config.addArgs("isInterface", Boolean.FALSE);
-            config.getStrategy().processBlock(advice.getBehavior().getReturnType(), advice.getClassLoader(), config);
         }
+
+        config.addArgs(PradarService.PRADAR_WHITE_LIST_CHECK, whiteList);
+        // 白名单需要的信息
+        config.addArgs("url", fullPath);
+        // mock转发需要信息
+        config.addArgs("request", request);
+        config.addArgs("method", "url");
+        config.addArgs("isInterface", Boolean.FALSE);
+        config.getStrategy().processBlock(advice.getBehavior().getReturnType(), advice.getClassLoader(), config);
 
     }
 

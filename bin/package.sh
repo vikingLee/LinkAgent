@@ -11,5 +11,3 @@ sh packages.sh
 
 cd ${HOME}/simulator-agent/bin/
 sh agent-packages.sh
-
-

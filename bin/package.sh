@@ -3,10 +3,10 @@
 HOME=$(dirname $(pwd))
 
 cd ${HOME}/instrument-simulator/bin/
-./simulator-packages.sh
+sh simulator-packages.sh
 
 cd ${HOME}/instrument-modules/bin/
-./packages.sh
+sh packages.sh
 
 
 cd ${HOME}/simulator-agent/bin/

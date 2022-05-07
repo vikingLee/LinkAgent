@@ -13,6 +13,7 @@
     <properties>
         <module-name>webflux</module-name>
     </properties>
+    <version>2.0.1.0</version>
 
     <dependencies>
         <dependency>

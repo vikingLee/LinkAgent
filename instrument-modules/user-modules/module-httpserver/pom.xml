@@ -13,6 +13,7 @@
     <properties>
         <module-name>httpserver</module-name>
     </properties>
+    <version>2.0.0.0</version>
 
     <dependencies>
         <dependency>

@@ -32,7 +32,6 @@ module-oscache
 module-jetty
 module-mock
 module-mongodb
-module-mongodb4
 module-motan
 module-mule
 module-neo4j
@@ -44,6 +43,7 @@ module-redis-lettuce
 module-redis-redisson
 module-resin
 module-saturn
+module-shadow-job
 module-spring-cache
 module-undertow
 module-xmemcached
@@ -55,15 +55,13 @@ module-hystrix
 module-httpserver
 module-caffeine
 module-logback
+module-log4j
 module-apache-kafka-stream
 module-akka
 module-feign
 module-webflux
 module-zuul
-module-apache-axis
 module-apache-cxf
+module-apache-axis
 module-jersey
-module-netty-time-wheel
-module-proxool
-module-shadow-job
 module-spring-cloud-gateway

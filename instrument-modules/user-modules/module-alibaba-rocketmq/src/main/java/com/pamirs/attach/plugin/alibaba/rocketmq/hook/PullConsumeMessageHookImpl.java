@@ -74,7 +74,6 @@ public class PullConsumeMessageHookImpl implements ConsumeMessageHook, MQTraceCo
                     continue;
                 }
                 MQTraceBean traceBean = new MQTraceBean();
-                traceBean.setMsg(msg);
 
                 boolean isClusterTest = msg.getTopic() != null &&
                     (Pradar.isClusterTestPrefix(msg.getTopic())

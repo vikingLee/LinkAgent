@@ -23,6 +23,8 @@ import com.pamirs.pradar.MiddlewareType;
 import com.pamirs.pradar.Pradar;
 import com.pamirs.pradar.ResultCode;
 import com.pamirs.pradar.pressurement.ClusterTestUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 消息消费轨迹埋点
@@ -32,10 +34,12 @@ import com.pamirs.pradar.pressurement.ClusterTestUtils;
  */
 public class MQConsumeMessageTraceLog {
 
+    private static final Logger logger = LoggerFactory.getLogger(MQConsumeMessageTraceLog.class);
+
     public static void consumeMessageBefore(MQTraceContext ctx) {
 
         if (ctx == null || ctx.getTraceBeans() == null || ctx.getTraceBeans().size() == 0
-                || ctx.getTraceBeans().get(0) == null) {
+            || ctx.getTraceBeans().get(0) == null) {
             return;
         }
 
@@ -88,7 +92,13 @@ public class MQConsumeMessageTraceLog {
         Pradar.middlewareName(RocketmqConstants.PLUGIN_NAME);
 
         String group = ctx.getGroup();
-        Pradar.getInvokeContext().setClusterTest(Pradar.isClusterTestPrefix(group));
+        if (Pradar.getInvokeContext().isClusterTest() && !Pradar.isClusterTestPrefix(group)) {
+            logger.error("msg header is cluster test, group is not business group {} msg : {}", group, traceBean.getMsg());
+        }
+        if (!Pradar.isClusterTest() && Pradar.isClusterTestPrefix(group)) {
+            logger.error("msg header is not cluster test, group is business group {} msg : {}", group, traceBean.getMsg());
+            Pradar.setClusterTest(true);
+        }
         if (firstTrace != null) {
             // 追加 msgId 和第一条消息的 TraceId
             Pradar.callBack(traceBean.getMsgId() + "/" + firstTrace);

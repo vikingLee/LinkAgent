@@ -14,14 +14,11 @@
  */
 package com.pamirs.attach.plugin.alibaba.rocketmq.common;
 
-import com.pamirs.pradar.Pradar;
-import com.pamirs.pradar.PradarService;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
-import com.alibaba.rocketmq.common.message.MessageExt;
+import com.pamirs.pradar.PradarService;
 
 /**
  * 消息轨迹数据实体
@@ -52,7 +49,6 @@ public class MQTraceBean {
     private long offset;
     private int retryTimes;
     private int bodyLength;
-    private MessageExt msg;
 
     //TODO：系统属性还没有记录，转换成字符串记录
     private Map<String, String> props = new TreeMap<String, String>();
@@ -232,11 +228,4 @@ public class MQTraceBean {
         context.put(PradarService.PRADAR_CLUSTER_TEST_KEY, clusterTest);
     }
 
-    public void setMsg(MessageExt msg) {
-        this.msg = msg;
-    }
-
-    public MessageExt getMsg() {
-        return msg;
-    }
 }

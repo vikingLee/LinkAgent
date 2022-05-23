@@ -93,10 +93,10 @@ public class MQConsumeMessageTraceLog {
 
         String group = ctx.getGroup();
         if (Pradar.getInvokeContext().isClusterTest() && !Pradar.isClusterTestPrefix(group)) {
-            logger.error("msg header is cluster test, group is not business group {} msg : {}", group, traceBean.getMsg());
+            logger.error("msg header is cluster test, group is not business group {} msg : {}", group, traceBean.getMsgId());
         }
         if (!Pradar.isClusterTest() && Pradar.isClusterTestPrefix(group)) {
-            logger.error("msg header is not cluster test, group is business group {} msg : {}", group, traceBean.getMsg());
+            logger.error("msg header is not cluster test, group is business group {} msg : {}", group, traceBean.getMsgId());
             Pradar.setClusterTest(true);
         }
         if (firstTrace != null) {

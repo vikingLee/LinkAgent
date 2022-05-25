@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.pamirs.attach.plugin.rabbitmq.RabbitmqConstants;
+import com.pamirs.attach.plugin.rabbitmq.common.BasicPropertiesHelp;
 import com.pamirs.attach.plugin.rabbitmq.destroy.RabbitmqDestroy;
 import com.pamirs.pradar.Pradar;
 import com.pamirs.pradar.PradarSwitcher;
@@ -52,6 +53,8 @@ public class ChannelNBasicPublishInterceptor extends TraceInterceptorAdaptor {
 
     private volatile Field headersField;
 
+    private static final int propertiesIndex = 4;
+
     private synchronized void initHeadersField() {
         try {
             Class clazz = AMQP.BasicProperties.class;
@@ -80,6 +83,12 @@ public class ChannelNBasicPublishInterceptor extends TraceInterceptorAdaptor {
     public void beforeFirst(Advice advice) {
         ClusterTestUtils.validateClusterTest();
         Object[] args = advice.getParameterArray();
+        if (args.length > 3) {
+            Object data = args[propertiesIndex];
+            if (data instanceof AMQP.BasicProperties) {
+                advice.changeParameter(propertiesIndex, BasicPropertiesHelp.copy((AMQP.BasicProperties) data));
+            }
+        }
         if (Pradar.isClusterTest()) {
             String exchange = (String)args[0];
             String routingKey = (String)args[1];
@@ -106,7 +115,7 @@ public class ChannelNBasicPublishInterceptor extends TraceInterceptorAdaptor {
     @Override
     protected ContextTransfer getContextTransfer(Advice advice) {
         Object[] args = advice.getParameterArray();
-        AMQP.BasicProperties properties = (AMQP.BasicProperties)args[4];
+        AMQP.BasicProperties properties = (AMQP.BasicProperties)args[propertiesIndex];
         final Map<String, Object> headers = properties.getHeaders() == null ? new HashMap<String, Object>()
             : new HashMap<String, Object>(properties.getHeaders());
         headers.putAll(Pradar.getInvokeContextTransformMap());

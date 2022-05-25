@@ -200,6 +200,8 @@ public class ChannelNProcessDeliveryInterceptor extends TraceInterceptorAdaptor 
         }
         AMQP.Basic.Deliver m = (AMQP.Basic.Deliver)args[1];
         validatePressureMeasurement(m.getConsumerTag());
+        boolean channelClusterTest = Pradar.isClusterTest();
+        boolean msgClusterTest = false;
         try {
             Command command = (Command)args[0];
             BasicProperties contentHeader = (BasicProperties)command.getContentHeader();
@@ -207,16 +209,22 @@ public class ChannelNProcessDeliveryInterceptor extends TraceInterceptorAdaptor 
             if (null != headers && headers.get(PradarService.PRADAR_CLUSTER_TEST_KEY) != null && ClusterTestUtils
                 .isClusterTestRequest(headers.get(PradarService.PRADAR_CLUSTER_TEST_KEY).toString())) {
                 Pradar.setClusterTest(true);
+                msgClusterTest = true;
             }
             if (!Pradar.isClusterTest()) {
                 String routingKey = m.getRoutingKey();
                 if (StringUtils.isNotBlank(routingKey) && ClusterTestUtils.isClusterTestRequest(routingKey)) {
                     Pradar.setClusterTest(true);
+                    msgClusterTest = true;
                 }
                 String exchange = m.getExchange();
                 if (StringUtils.isNotBlank(exchange) && ClusterTestUtils.isClusterTestRequest(exchange)) {
                     Pradar.setClusterTest(true);
+                    msgClusterTest = true;
                 }
+            }
+            if (msgClusterTest != channelClusterTest) {
+                logger.error("rabbitmq 收到消息 {} 压测标记 {} 与所消费的channel不一致，消费channel {}, 压测标记 {}", new String(command.getContentBody()), msgClusterTest, m.getConsumerTag() + ":" + m.getRoutingKey() + ":" + m.getExchange(), channelClusterTest);
             }
         } catch (Throwable e) {
             if (Pradar.isClusterTest()) {

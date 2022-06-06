@@ -79,7 +79,7 @@ AsyncHttpClientv5MethodInterceptor1 extends AroundInterceptor {
         String url = getService(uri.getScheme(), host, port, path);
         boolean isBlackHost = BlackHostChecker.isBlackHost(url);
         String method = request.getMethod();
-        Pradar.startClientInvoke(path, method);
+        Pradar.startClientInvoke(path, method, true);
         Pradar.remoteIp(host);
         Pradar.remotePort(port);
         Pradar.middlewareName(HttpClientConstants.HTTP_CLIENT_NAME_5X);

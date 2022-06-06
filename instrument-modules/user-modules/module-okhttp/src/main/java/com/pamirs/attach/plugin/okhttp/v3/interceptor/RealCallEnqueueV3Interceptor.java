@@ -52,6 +52,10 @@ public class RealCallEnqueueV3Interceptor extends TraceInterceptorAdaptor {
         return OKHttpConstants.PLUGIN_TYPE;
     }
 
+    @Override
+    protected boolean isAsync(Advice advice) {
+        return true;
+    }
 
     @Override
     public void beforeFirst(Advice advice) throws ProcessControlException {

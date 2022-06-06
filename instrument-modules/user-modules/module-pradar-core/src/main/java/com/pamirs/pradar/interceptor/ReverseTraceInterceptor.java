@@ -235,7 +235,7 @@ abstract class ReverseTraceInterceptor extends BaseInterceptor {
         if (isTrace0(advice)) {
             String traceId = TraceIdGenerator.generate(record.getRemoteIp(), Pradar.isClusterTest());
             Pradar.clearInvokeContext();
-            Pradar.startTrace(traceId, record.getService(), record.getMethod());
+            Pradar.startTrace(traceId, record.getService(), record.getMethod(), false);
         } else {
             Pradar.startServerInvoke(record.getService(), record.getMethod(), null, record.getContext());
         }
@@ -292,7 +292,7 @@ abstract class ReverseTraceInterceptor extends BaseInterceptor {
                 return;
             }
 
-            Pradar.startClientInvoke(record.getService(), record.getMethod());
+            Pradar.startClientInvoke(record.getService(), record.getMethod(), record.isAsync());
             InvokeContext invokeContext = Pradar.getInvokeContext();
             if (record.getRequestSize() != 0) {
                 invokeContext.setRequestSize(record.getRequestSize());

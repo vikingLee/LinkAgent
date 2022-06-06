@@ -115,6 +115,8 @@ abstract class BaseContext {
      */
     int invokeType = 0;
 
+    boolean async = false;
+
     BaseContext(String _traceId, String _traceAppName, String _invokeId) {
         this.traceId = _traceId;
         this.invokeId = _invokeId;
@@ -340,6 +342,14 @@ abstract class BaseContext {
     public abstract String getTraceNode();
 
     public abstract String getNodeId();
+
+    public boolean isAsync() {
+        return async;
+    }
+
+    public void setAsync(boolean async) {
+        this.async = async;
+    }
 
     public boolean isPassCheck() {
         //fixme,yuhan之前加的跳过白面单校验的逻辑，这块代码逻辑要整个干掉，先临时这么搞

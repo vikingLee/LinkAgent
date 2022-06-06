@@ -113,7 +113,7 @@ public class AsyncHttpClientv4MethodInterceptor1 extends AroundInterceptor {
         httpClusterTest(advice, args, request, url);
 
         String method = request.getMethod();
-        Pradar.startClientInvoke(path, method);
+        Pradar.startClientInvoke(path, method, true);
         Pradar.remoteIp(host);
         Pradar.remotePort(port);
         Pradar.middlewareName(HttpClientConstants.HTTP_CLIENT_NAME_4X);

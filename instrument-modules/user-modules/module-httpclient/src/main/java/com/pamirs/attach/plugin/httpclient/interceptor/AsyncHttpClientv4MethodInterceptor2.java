@@ -135,7 +135,7 @@ public class AsyncHttpClientv4MethodInterceptor2 extends AroundInterceptor {
         boolean isBlackHost = BlackHostChecker.isBlackHost(url);
         httpClusterTest(advice, args, request, url);
 
-        Pradar.startClientInvoke(path, method);
+        Pradar.startClientInvoke(path, method, true);
         Pradar.remoteIp(host);
         Pradar.remotePort(port);
         Pradar.middlewareName(HttpClientConstants.HTTP_CLIENT_NAME_4X);

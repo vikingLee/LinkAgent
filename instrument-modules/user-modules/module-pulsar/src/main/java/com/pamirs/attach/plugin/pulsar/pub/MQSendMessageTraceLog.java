@@ -39,7 +39,7 @@ public class MQSendMessageTraceLog {
         String serviceName = PradarLogUtils.getService(ctx);
         String methodName = PradarLogUtils.getMethod(ctx);
 
-        Pradar.startClientInvoke(serviceName, methodName);
+        Pradar.startClientInvoke(serviceName, methodName, true);
 
         MQTraceBean traceBean = ctx.getTraceBeans().get(0);
         traceBean.setContext(Pradar.getInvokeContextMap());

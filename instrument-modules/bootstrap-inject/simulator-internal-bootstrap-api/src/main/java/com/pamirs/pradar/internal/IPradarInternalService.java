@@ -143,7 +143,7 @@ public interface IPradarInternalService {
      * @param traceId     全局唯一的id，如果传入的值为空或者null，系统会自动生成
      * @param serviceName 用户自定义的入口标识值，不能为 <code>null</code>， 建议传入能够唯一标识入口的数据，例如用户访问网络的 http url
      */
-    void startTrace(String traceId, String serviceName, String methodName);
+    void startTrace(String traceId, String serviceName, String methodName, boolean async);
 
     /**
      * 开启新的trace，该接口仅提供给最源头的前中间件或自己启动的定时程序调用， 支持配置 invokeId 来开启一个嵌套的调用链。使用该接口时，必须最后调用endTrace结束。
@@ -152,9 +152,9 @@ public interface IPradarInternalService {
      * @param invokeId    额外指定 invokeId
      * @param serviceName 用户自定义的入口标识值，不能为 <code>null</code>， 建议传入能够唯一标识入口的数据，例如用户访问网络的 http url
      */
-    void startTrace(String traceId, String invokeId, String serviceName, String methodName);
+    void startTrace(String traceId, String invokeId, String serviceName, String methodName, boolean async);
 
-    void startTrace(String traceId, String invokeId, String serviceName, String methodName,String middlewareName);
+    void startTrace(String traceId, String invokeId, String serviceName, String methodName,String middlewareName, boolean async);
 
     /**
      * 标记压测流量
@@ -286,7 +286,7 @@ public interface IPradarInternalService {
      * @param serviceName 服务名称
      * @param methodName  方法名称
      */
-    void startClientInvoke(String serviceName, String methodName);
+    void startClientInvoke(String serviceName, String methodName, boolean async);
 
     /**
      * 记录客户端收到RPC响应的事件

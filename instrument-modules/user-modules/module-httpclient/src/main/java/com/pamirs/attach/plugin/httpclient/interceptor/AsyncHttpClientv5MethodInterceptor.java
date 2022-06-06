@@ -84,7 +84,7 @@ public class AsyncHttpClientv5MethodInterceptor extends AroundInterceptor {
         //判断是否在白名单中
         String url = getService(httpHost.getSchemeName(), host, port, path);
         boolean isBlackHost = BlackHostChecker.isBlackHost(url);
-        Pradar.startClientInvoke(path, method);
+        Pradar.startClientInvoke(path, method, true);
         Pradar.remoteIp(host);
         Pradar.remotePort(port);
         Pradar.middlewareName(HttpClientConstants.HTTP_CLIENT_NAME_5X);

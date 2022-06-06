@@ -65,7 +65,7 @@ public class AerospikePlugin extends ModuleLifecycleAdapter implements Extension
             @Override
             public void doEnhance(InstrumentClass target) {
                 InstrumentMethod method = target.getDeclaredMethods("put", "append", "prepend", "add", "delete", "touch", "exists", "exists", "get", "getHeader", "operate", "getLargeList", "getLargeMap", "getLargeStack", "execute", "query", "queryNode", "queryAggregate");
-                method.addInterceptor(Listeners.of(AreospikeOperateInterceptor.class));
+                method.addInterceptor(Listeners.of(AsyncAreospikeOperateInterceptor.class));
 
                 InstrumentMethod scanNodeMethod = target.getDeclaredMethods("scanNode");
                 scanNodeMethod.addInterceptor(Listeners.of(ScanNodeParameterWrapInterceptor.class));
@@ -75,7 +75,7 @@ public class AerospikePlugin extends ModuleLifecycleAdapter implements Extension
                 InstrumentMethod scanAllMethod = target.getDeclaredMethods("scanAll");
                 scanAllMethod.addInterceptor(Listeners.of(ScanAllParameterWrapInterceptor.class));
 
-                scanAllMethod.addInterceptor(Listeners.of(AreospikeScanAllInterceptor.class));
+                scanAllMethod.addInterceptor(Listeners.of(AsyncAreospikeScanAllInterceptor.class));
             }
         });
         return true;

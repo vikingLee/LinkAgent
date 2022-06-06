@@ -44,6 +44,11 @@ public class NettyRequestSenderSendRequestInterceptor extends TraceInterceptorAd
     }
 
     @Override
+    protected boolean isAsync(Advice advice) {
+        return true;
+    }
+
+    @Override
     public void beforeFirst(Advice advice) {
         if (!Pradar.isClusterTest()) {
             return;

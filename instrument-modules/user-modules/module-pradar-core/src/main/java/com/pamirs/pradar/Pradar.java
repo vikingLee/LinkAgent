@@ -14,7 +14,20 @@
  */
 package com.pamirs.pradar;
 
+import java.io.File;
+import java.lang.management.ManagementFactory;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import com.alibaba.fastjson.JSON;
+
 import com.pamirs.pradar.common.PropertyPlaceholderHelper;
 import com.pamirs.pradar.common.RuntimeUtils;
 import com.pamirs.pradar.debug.DebugHelper;
@@ -26,13 +39,6 @@ import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.lang.text.StrBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.lang.management.ManagementFactory;
-import java.net.URL;
-import java.nio.charset.Charset;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.pamirs.pradar.AppNameUtils.appName;
 import static com.pamirs.pradar.InvokeContext.INVOKE_ID_LENGTH_LIMIT;
@@ -427,7 +433,6 @@ public final class Pradar {
         return true;
     }
 
-
     /**
      * 是否影子库里用影子scheme模式
      *
@@ -440,7 +445,6 @@ public final class Pradar {
         }
         return true;
     }
-
 
     /**
      * 给指定值添加小写的压测后缀
@@ -1066,12 +1070,12 @@ public final class Pradar {
      * @param traceId     全局唯一的id，如果传入的值为空或者null，系统会自动生成
      * @param serviceName 用户自定义的入口标识值，不能为 <code>null</code>， 建议传入能够唯一标识入口的数据，例如用户访问网络的 http url
      */
-    static public void startTrace(String traceId, String serviceName, String methodName) {
-        startTrace(traceId, null, serviceName, methodName);
+    static public void startTrace(String traceId, String serviceName, String methodName, boolean async) {
+        startTrace(traceId, null, serviceName, methodName, async);
     }
 
-    static public void startTrace(String traceId, String invokeId, String serviceName, String methodName) {
-        startTrace(traceId, invokeId, serviceName, methodName, null);
+    static public void startTrace(String traceId, String invokeId, String serviceName, String methodName, boolean async) {
+        startTrace(traceId, invokeId, serviceName, methodName, null, async);
     }
 
     /**
@@ -1082,7 +1086,7 @@ public final class Pradar {
      * @param serviceName 用户自定义的入口标识值，不能为 <code>null</code>， 建议传入能够唯一标识入口的数据，例如用户访问网络的 http url
      */
     static public void startTrace(String traceId, String invokeId, String serviceName, String methodName,
-        String middlewareName) {
+        String middlewareName, boolean async) {
         if (serviceName == null) {
             return;
         }
@@ -1120,6 +1124,7 @@ public final class Pradar {
             ctx = new InvokeContext(traceId, appName(), invokeId, methodName, serviceName);
             InvokeContext.set(ctx);
             ctx.startTrace(serviceName, methodName);
+            setAsyncFlag(async, ctx);
             if (middlewareName != null) {
                 ctx.setMiddlewareName(middlewareName);
             }
@@ -1756,12 +1761,13 @@ public final class Pradar {
      * @param serviceName 服务名称
      * @param methodName  方法名称
      */
-    static public InvokeContext startClientInvoke(String serviceName, String methodName) {
+    static public InvokeContext startClientInvoke(String serviceName, String methodName, boolean async) {
         try {
             InvokeContext ctx = startInvoke();
             if (null == ctx) {
                 return null;
             }
+            setAsyncFlag(async, ctx);
             ctx.startClientInvoke(serviceName, methodName);
             if (Pradar.isDebug()) {
                 DebugHelper.addMachineDebugInfo("beforeFirst");
@@ -1772,6 +1778,16 @@ public final class Pradar {
             LOGGER.error("rpcClientSend", re);
         }
         return null;
+    }
+
+    private static void setAsyncFlag(boolean async, InvokeContext ctx) {
+        if (!async) {
+            InvokeContext parent = ctx.parentInvokeContext;
+            if (parent != null && !ctx.getLocalAttribute("st").equals(parent.getLocalAttribute("st"))) {
+                async = true;
+            }
+        }
+        ctx.async = async;
     }
 
     /**

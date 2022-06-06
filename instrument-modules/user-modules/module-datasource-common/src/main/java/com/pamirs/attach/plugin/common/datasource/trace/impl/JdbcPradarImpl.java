@@ -44,7 +44,7 @@ public class JdbcPradarImpl implements JdbcPradar {
     }
 
     private void startRpc(SqlTraceMetaData sqlMetaData) {
-        Pradar.startClientInvoke(sqlMetaData.getUrl(), sqlMetaData.getTableNames());
+        Pradar.startClientInvoke(sqlMetaData.getUrl(), sqlMetaData.getTableNames(), false);
         Pradar.middlewareName(sqlMetaData.getDbType());
         Pradar.remoteIp(sqlMetaData.getHost());
         Pradar.remotePort(sqlMetaData.getPort());

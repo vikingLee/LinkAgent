@@ -57,6 +57,11 @@ public class ProducerSendInterceptor extends TraceInterceptorAdaptor {
     private Field topicField;
     private Field producerConfigField;
 
+    @Override
+    protected boolean isAsync(Advice advice) {
+        return true;
+    }
+
     private void initTopicField(Object target) {
         if (topicField != null) {
             return;

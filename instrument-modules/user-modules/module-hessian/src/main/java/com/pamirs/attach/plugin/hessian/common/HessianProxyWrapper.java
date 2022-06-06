@@ -169,7 +169,7 @@ public class HessianProxyWrapper extends HessianProxy {
         if (record == null) {
             return;
         }
-        Pradar.startClientInvoke(record.getService(), record.getMethod());
+        Pradar.startClientInvoke(record.getService(), record.getMethod(), false);
         if (record.getRequest() != null) {
             Pradar.request(record.getRequest());
         } else if (record.getRequestSize() != 0) {

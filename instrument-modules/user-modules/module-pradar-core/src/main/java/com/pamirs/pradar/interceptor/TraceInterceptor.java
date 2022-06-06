@@ -14,7 +14,12 @@
  */
 package com.pamirs.pradar.interceptor;
 
+import java.util.Map;
+
+import javax.annotation.Resource;
+
 import com.alibaba.fastjson.JSON;
+
 import com.pamirs.pradar.InvokeContext;
 import com.pamirs.pradar.Pradar;
 import com.pamirs.pradar.ResultCode;
@@ -28,9 +33,6 @@ import com.shulie.instrument.simulator.api.resource.SimulatorConfig;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Resource;
-import java.util.Map;
 
 import static com.pamirs.pradar.interceptor.TraceInterceptorAdaptor.BEFORE_TRACE_SUCCESS;
 
@@ -85,6 +87,16 @@ abstract class TraceInterceptor extends BaseInterceptor {
     }
 
     /**
+     * 是否是异步调用
+     *
+     * @param advice
+     * @return
+     */
+    protected boolean isAsync(Advice advice) {
+        return false;
+    }
+
+    /**
      * 是否是入口
      *
      * @return
@@ -103,7 +115,9 @@ abstract class TraceInterceptor extends BaseInterceptor {
         try {
             return isTrace(advice);
         } catch (Throwable e) {
-            LOGGER.error("TraceAroundInterceptor: {} isTrace throw a exception, return default result[isTrace=false] instead.", getClass().getName(), e);
+            LOGGER.error(
+                "TraceAroundInterceptor: {} isTrace throw a exception, return default result[isTrace=false] instead.",
+                getClass().getName(), e);
             return false;
         }
     }
@@ -254,7 +268,7 @@ abstract class TraceInterceptor extends BaseInterceptor {
                 LOGGER.error("TraceInterceptor beforeLast exec err, class:" + this.getClass().getName(), e);
                 throwable = e;
             } catch (Throwable t) {
-                LOGGER.error("TraceInterceptor beforeLast exec err, class:" +  this.getClass().getName(), t);
+                LOGGER.error("TraceInterceptor beforeLast exec err, class:" + this.getClass().getName(), t);
                 throwable = t;
             }
         }
@@ -269,7 +283,8 @@ abstract class TraceInterceptor extends BaseInterceptor {
                     try {
                         isClient = isClient(advice);
                     } catch (Throwable e) {
-                        LOGGER.error("Trace {} isClient execute error. use default value instead. {}", getClass().getName(), isClient, e);
+                        LOGGER.error("Trace {} isClient execute error. use default value instead. {}", getClass().getName(),
+                            isClient, e);
                     }
                     if (isClient) {
                         endClientInvoke(ResultCode.INVOKE_RESULT_FAILED, getPluginType(), advice);
@@ -280,7 +295,8 @@ abstract class TraceInterceptor extends BaseInterceptor {
                     advice.unMark(BEFORE_TRACE_SUCCESS);
                 }
             } else {
-                LOGGER.error("trace throw exception, but not BEFORE_TRACE_SUCCESS in {}.beforeTrace(...). loss trace log!", getClass().getName(), throwable);
+                LOGGER.error("trace throw exception, but not BEFORE_TRACE_SUCCESS in {}.beforeTrace(...). loss trace log!",
+                    getClass().getName(), throwable);
             }
 
             //压测流量抛出异常，  业务流量只做记录
@@ -290,7 +306,6 @@ abstract class TraceInterceptor extends BaseInterceptor {
         }
 
     }
-
 
     /**
      * 开始服务端调用
@@ -310,7 +325,7 @@ abstract class TraceInterceptor extends BaseInterceptor {
         if (isTrace0(advice)) {
             String traceId = TraceIdGenerator.generate(record.getRemoteIp(), Pradar.isClusterTest());
             Pradar.clearInvokeContext();
-            Pradar.startTrace(traceId, record.getService(), record.getMethod());
+            Pradar.startTrace(traceId, record.getService(), record.getMethod(), false);
         } else {
             Pradar.startServerInvoke(record.getService(), record.getMethod(), null, record.getContext());
         }
@@ -363,7 +378,7 @@ abstract class TraceInterceptor extends BaseInterceptor {
                 return;
             }
 
-            Pradar.startClientInvoke(record.getService(), record.getMethod());
+            Pradar.startClientInvoke(record.getService(), record.getMethod(), isAsync(advice));
             InvokeContext invokeContext = readCurrentInvokeContext(advice);
             if (invokeContext == null) {
                 return;
@@ -406,7 +421,8 @@ abstract class TraceInterceptor extends BaseInterceptor {
                         }
                     }
                 } catch (Throwable e) {
-                    LOGGER.error("AGENT: {} trace context transfer err, trace context may be lost.", getClass().getName(), e);
+                    LOGGER.error("AGENT: {} trace context transfer err, trace context may be lost.", getClass().getName(),
+                        e);
                 }
             }
         }
@@ -487,9 +503,12 @@ abstract class TraceInterceptor extends BaseInterceptor {
 
     private void endInvoke(String resultCode, int type, Advice advice, EndCall endCall) {
         InvokeContext invokeContext = Pradar.getInvokeContext();
-        InvokeContext adviceInvokeContext = (InvokeContext) advice.getInvokeContext();
+        InvokeContext adviceInvokeContext = (InvokeContext)advice.getInvokeContext();
         if (invokeContext != adviceInvokeContext) {
-            LOGGER.error("invokeContext is not same, thread: {}, class : {},  \n\rthread context: {}, \n\radvice context: {}", Thread.currentThread(), this.getClass(), JSON.toJSONString(invokeContext), JSON.toJSONString(adviceInvokeContext));
+            LOGGER.error(
+                "invokeContext is not same, thread: {}, class : {},  \n\rthread context: {}, \n\radvice context: {}",
+                Thread.currentThread(), this.getClass(), JSON.toJSONString(invokeContext),
+                JSON.toJSONString(adviceInvokeContext));
 
             try {
                 Pradar.setInvokeContext(adviceInvokeContext);
@@ -506,7 +525,7 @@ abstract class TraceInterceptor extends BaseInterceptor {
         if (advice.getInvokeContext() == null) {
             return Pradar.getInvokeContext();
         } else {
-            return (InvokeContext) advice.getInvokeContext();
+            return (InvokeContext)advice.getInvokeContext();
         }
     }
 
@@ -815,7 +834,6 @@ abstract class TraceInterceptor extends BaseInterceptor {
             advice.unMark(BEFORE_TRACE_SUCCESS);
         }
     }
-
 
     private interface EndCall {
         void call(String resultCode, int type);

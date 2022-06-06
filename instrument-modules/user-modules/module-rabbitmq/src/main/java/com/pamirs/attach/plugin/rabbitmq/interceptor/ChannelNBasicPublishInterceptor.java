@@ -52,6 +52,11 @@ public class ChannelNBasicPublishInterceptor extends TraceInterceptorAdaptor {
 
     private volatile Field headersField;
 
+    @Override
+    protected boolean isAsync(Advice advice) {
+        return true;
+    }
+
     private synchronized void initHeadersField() {
         try {
             Class clazz = AMQP.BasicProperties.class;

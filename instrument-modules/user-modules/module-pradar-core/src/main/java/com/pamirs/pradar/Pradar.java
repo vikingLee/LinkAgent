@@ -1070,12 +1070,12 @@ public final class Pradar {
      * @param traceId     全局唯一的id，如果传入的值为空或者null，系统会自动生成
      * @param serviceName 用户自定义的入口标识值，不能为 <code>null</code>， 建议传入能够唯一标识入口的数据，例如用户访问网络的 http url
      */
-    static public void startTrace(String traceId, String serviceName, String methodName, boolean async) {
-        startTrace(traceId, null, serviceName, methodName, async);
+    static public void startTrace(String traceId, String serviceName, String methodName) {
+        startTrace(traceId, null, serviceName, methodName);
     }
 
-    static public void startTrace(String traceId, String invokeId, String serviceName, String methodName, boolean async) {
-        startTrace(traceId, invokeId, serviceName, methodName, null, async);
+    static public void startTrace(String traceId, String invokeId, String serviceName, String methodName) {
+        startTrace(traceId, invokeId, serviceName, methodName, null);
     }
 
     /**
@@ -1086,7 +1086,7 @@ public final class Pradar {
      * @param serviceName 用户自定义的入口标识值，不能为 <code>null</code>， 建议传入能够唯一标识入口的数据，例如用户访问网络的 http url
      */
     static public void startTrace(String traceId, String invokeId, String serviceName, String methodName,
-        String middlewareName, boolean async) {
+        String middlewareName) {
         if (serviceName == null) {
             return;
         }
@@ -1124,7 +1124,6 @@ public final class Pradar {
             ctx = new InvokeContext(traceId, appName(), invokeId, methodName, serviceName);
             InvokeContext.set(ctx);
             ctx.startTrace(serviceName, methodName);
-            setAsyncFlag(async, ctx);
             if (middlewareName != null) {
                 ctx.setMiddlewareName(middlewareName);
             }

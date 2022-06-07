@@ -24,7 +24,7 @@ public class TraceTimerTask implements TimerTask {
     public void run(Timeout timeout) throws Exception {
         String invokeId = rpcContext.get(PradarService.PRADAR_INVOKE_ID_KEY);
         Pradar.startTrace(rpcContext.get(PradarService.PRADAR_TRACE_ID_KEY), invokeId + ".1",
-            busTimerTask.getClass().getName(), NettyTimeWheelConstants.PLUGIN_NAME, NettyTimeWheelConstants.PLUGIN_NAME, false);
+            busTimerTask.getClass().getName(), NettyTimeWheelConstants.PLUGIN_NAME, NettyTimeWheelConstants.PLUGIN_NAME);
         Pradar.setClusterTest("1".equals(rpcContext.get(PradarService.PRADAR_CLUSTER_TEST_KEY)));
         try {
             busTimerTask.run(timeout);

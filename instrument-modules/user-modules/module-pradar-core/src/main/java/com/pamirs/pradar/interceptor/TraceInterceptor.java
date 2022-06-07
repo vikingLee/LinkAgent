@@ -325,7 +325,7 @@ abstract class TraceInterceptor extends BaseInterceptor {
         if (isTrace0(advice)) {
             String traceId = TraceIdGenerator.generate(record.getRemoteIp(), Pradar.isClusterTest());
             Pradar.clearInvokeContext();
-            Pradar.startTrace(traceId, record.getService(), record.getMethod(), false);
+            Pradar.startTrace(traceId, record.getService(), record.getMethod());
         } else {
             Pradar.startServerInvoke(record.getService(), record.getMethod(), null, record.getContext());
         }

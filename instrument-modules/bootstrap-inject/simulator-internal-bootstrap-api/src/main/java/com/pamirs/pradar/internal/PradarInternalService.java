@@ -329,11 +329,11 @@ public class PradarInternalService {
     }
 
 
-    public static void startClientInvoke(String serviceName, String methodName) {
+    public static void startClientInvoke(String serviceName, String methodName, boolean async) {
         if (service == null) {
             return;
         }
-        service.startClientInvoke(serviceName, methodName);
+        service.startClientInvoke(serviceName, methodName, async);
     }
 
     public static void endClientInvoke(String resultCode, int type) {

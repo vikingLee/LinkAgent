@@ -96,17 +96,17 @@ public class DefaultPradarInternalService implements IPradarInternalService {
     }
 
     @Override
-    public void startTrace(String traceId, String serviceName, String methodName, boolean async) {
-        Pradar.startTrace(traceId, serviceName, methodName, async);
+    public void startTrace(String traceId, String serviceName, String methodName) {
+        Pradar.startTrace(traceId, serviceName, methodName);
     }
 
     @Override
-    public void startTrace(String traceId, String invokeId, String serviceName, String methodName, boolean async) {
-        Pradar.startTrace(traceId, invokeId, serviceName, methodName, async);
+    public void startTrace(String traceId, String invokeId, String serviceName, String methodName) {
+        Pradar.startTrace(traceId, invokeId, serviceName, methodName);
     }
     @Override
-    public void startTrace(String traceId, String invokeId, String serviceName, String methodName,String middlewareName, boolean async) {
-        Pradar.startTrace(traceId, invokeId, serviceName, methodName,middlewareName, async);
+    public void startTrace(String traceId, String invokeId, String serviceName, String methodName,String middlewareName) {
+        Pradar.startTrace(traceId, invokeId, serviceName, methodName,middlewareName);
     }
 
 

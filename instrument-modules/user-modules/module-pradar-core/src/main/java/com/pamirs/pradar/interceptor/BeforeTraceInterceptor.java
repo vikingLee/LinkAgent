@@ -271,7 +271,7 @@ abstract class BeforeTraceInterceptor extends BaseInterceptor {
         if (isTrace0(advice)) {
             String traceId = TraceIdGenerator.generate(record.getRemoteIp(), Pradar.isClusterTest());
             Pradar.clearInvokeContext();
-            Pradar.startTrace(traceId, record.getService(), record.getMethod(), false);
+            Pradar.startTrace(traceId, record.getService(), record.getMethod());
         } else {
             Pradar.startServerInvoke(record.getService(), record.getMethod(), null, record.getContext());
         }
@@ -340,7 +340,7 @@ abstract class BeforeTraceInterceptor extends BaseInterceptor {
                 return;
             }
 
-            Pradar.startClientInvoke(record.getService(), record.getMethod(), record.isAsync());
+            Pradar.startClientInvoke(record.getService(), record.getMethod(), isAsync(advice));
             advice.mark(BEFORE_TRACE_SUCCESS);
 
             InvokeContext invokeContext = Pradar.getInvokeContext();
@@ -401,6 +401,10 @@ abstract class BeforeTraceInterceptor extends BaseInterceptor {
                 }
             }
         }
+    }
+
+    private boolean isAsync(Advice advice) {
+        return false;
     }
 
     @Override

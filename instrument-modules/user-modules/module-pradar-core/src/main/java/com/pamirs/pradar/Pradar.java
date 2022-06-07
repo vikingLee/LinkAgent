@@ -2471,6 +2471,7 @@ public final class Pradar {
         }
 
         if (ctx.logType < 0) {
+
             return true;
         }
         return false;

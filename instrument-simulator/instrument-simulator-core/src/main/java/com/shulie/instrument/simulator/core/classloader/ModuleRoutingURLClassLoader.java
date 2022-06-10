@@ -80,7 +80,7 @@ public abstract class ModuleRoutingURLClassLoader extends RoutingURLClassLoader 
                     .findExportResourceClassLoadersInOrder(resourceName);
             if (exportResourceClassLoadersInOrder != null) {
                 for (ClassLoaderFactory exportResourceClassLoaderFactory : exportResourceClassLoadersInOrder) {
-                    ClassLoader classLoader = exportResourceClassLoaderFactory.getClassLoader(getBizClassLoader());
+                    ClassLoader classLoader = exportResourceClassLoaderFactory.getClassLoader(BizClassLoaderHolder.getBizClassLoader());
                     url = classLoader.getResource(resourceName);
                     if (url != null) {
                         return url;
@@ -113,23 +113,15 @@ public abstract class ModuleRoutingURLClassLoader extends RoutingURLClassLoader 
                 if (classLoaderFactory == null) {
                     return null;
                 }
-                ClassLoader classLoader = classLoaderFactory.getClassLoader(getBizClassLoader());
+                ClassLoader classLoader = classLoaderFactory.getClassLoader(BizClassLoaderHolder.getBizClassLoader());
                 return classLoader == null ? null : classLoader.getResource(resourceName);
             }
         }
         return null;
     }
 
-    private ClassLoader getBizClassLoader() {
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        if (SimulatorClassUtils.isSimulatorClassLoader(classLoader)) {
-            return null;
-        }
-        return classLoader;
-    }
-
     protected URL getBusinessResource(String name) {
-        final ClassLoader bizClassLoader = getBizClassLoader();
+        final ClassLoader bizClassLoader = BizClassLoaderHolder.getBizClassLoader();
         if (bizClassLoader != null) {
             return bizClassLoader.getResource(name);
         }
@@ -137,7 +129,7 @@ public abstract class ModuleRoutingURLClassLoader extends RoutingURLClassLoader 
     }
 
     protected Enumeration<URL> getBusinessResources(String name) throws IOException {
-        final ClassLoader bizClassLoader = getBizClassLoader();
+        final ClassLoader bizClassLoader = BizClassLoaderHolder.getBizClassLoader();
         if (bizClassLoader == null) {
             return bizClassLoader.getResources(name);
         }
@@ -192,7 +184,7 @@ public abstract class ModuleRoutingURLClassLoader extends RoutingURLClassLoader 
             if (exportResourceClassLoadersInOrder != null) {
                 List<Enumeration<URL>> enumerationList = new ArrayList<Enumeration<URL>>();
                 for (ClassLoaderFactory exportResourceClassLoaderFactory : exportResourceClassLoadersInOrder) {
-                    ClassLoader classLoader = exportResourceClassLoaderFactory.getClassLoader(getBizClassLoader());
+                    ClassLoader classLoader = exportResourceClassLoaderFactory.getClassLoader(BizClassLoaderHolder.getBizClassLoader());
                     enumerationList.add(((ModuleRoutingURLClassLoader) classLoader)
                             .getLocalResources(resourceName));
                 }
@@ -285,7 +277,7 @@ public abstract class ModuleRoutingURLClassLoader extends RoutingURLClassLoader 
             ClassLoaderFactory importClassLoaderFactory = classLoaderService.findExportClassLoaderFactory(name);
             if (importClassLoaderFactory != null) {
                 try {
-                    ClassLoader classLoader = importClassLoaderFactory.getClassLoader(getBizClassLoader());
+                    ClassLoader classLoader = importClassLoaderFactory.getClassLoader(BizClassLoaderHolder.getBizClassLoader());
                     return classLoader.loadClass(name);
                 } catch (ClassNotFoundException e) {
                     // just log when debug level
@@ -347,7 +339,7 @@ public abstract class ModuleRoutingURLClassLoader extends RoutingURLClassLoader 
      */
     protected Class resolveBusinessClassLoader(String name) {
         try {
-            final ClassLoader bizClassLoader = getBizClassLoader();
+            final ClassLoader bizClassLoader = BizClassLoaderHolder.getBizClassLoader();
             if (bizClassLoader == null) {
                 return null;
             }

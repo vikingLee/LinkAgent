@@ -92,6 +92,7 @@ public class DubboProviderInterceptor extends TraceInterceptorAdaptor {
             remoteHost = PradarCoreUtils.getLocalAddress();
         }
 
+        record.setPort(context.getLocalPort());
         record.setRemoteIp(remoteHost);
         record.setService(interfaceName + version);
         record.setMethod(context.getMethodName() + getParameterTypesString(context.getParameterTypes()));

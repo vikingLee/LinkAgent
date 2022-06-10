@@ -99,8 +99,7 @@ class TraceInvokeContextEncoder extends TraceEncoder {
                 .append(TraceCoreUtils.localAttributes(
                         ctx.upAppName, ctx.remoteIp, ctx.getPort(), ctx.requestSize, ctx.responseSize))
                 .append("|")
-                .append(ctx.ext == null ? "" : ctx.ext)
-                .append("|").append(ctx.async);
+                .append(ctx.ext == null ? "" : ctx.ext);
         ctx.logContextData(buffer);
         buffer.append(PradarCoreUtils.NEWLINE);
         eea.append(buffer.toString());

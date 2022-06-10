@@ -44,7 +44,8 @@ public class JdbcPradarImpl implements JdbcPradar {
     }
 
     private void startRpc(SqlTraceMetaData sqlMetaData) {
-        Pradar.startClientInvoke(sqlMetaData.getUrl(), sqlMetaData.getTableNames(), false);
+        String tableName = isEmpty(sqlMetaData.getTableNames()) ? "unknown" : sqlMetaData.getTableNames();
+        Pradar.startClientInvoke(sqlMetaData.getUrl(), tableName, false);
         Pradar.middlewareName(sqlMetaData.getDbType());
         Pradar.remoteIp(sqlMetaData.getHost());
         Pradar.remotePort(sqlMetaData.getPort());
@@ -55,6 +56,9 @@ public class JdbcPradarImpl implements JdbcPradar {
         Pradar.request(request);
     }
 
+    private boolean isEmpty(String tableNames) {
+        return tableNames == null || "".equals(tableNames);
+    }
 
     @Override
     public void endRpc(SqlTraceMetaData sqlMetaData, Object result) {

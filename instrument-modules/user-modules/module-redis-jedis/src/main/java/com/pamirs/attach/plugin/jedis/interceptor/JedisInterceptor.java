@@ -14,13 +14,16 @@
  */
 package com.pamirs.attach.plugin.jedis.interceptor;
 
+import java.lang.reflect.Field;
+import java.util.Iterator;
+import java.util.Set;
+
 import com.pamirs.attach.plugin.dynamic.Attachment;
 import com.pamirs.attach.plugin.dynamic.resource.ConcurrentWeakHashMap;
 import com.pamirs.attach.plugin.dynamic.template.RedisTemplate;
 import com.pamirs.attach.plugin.jedis.RedisConstants;
 import com.pamirs.attach.plugin.jedis.destroy.JedisDestroyed;
 import com.pamirs.attach.plugin.jedis.util.Model;
-import com.pamirs.attach.plugin.jedis.util.RedisUtils;
 import com.pamirs.pradar.Pradar;
 import com.pamirs.pradar.ResultCode;
 import com.pamirs.pradar.exception.PressureMeasureError;
@@ -30,12 +33,12 @@ import com.shulie.instrument.simulator.api.annotation.Destroyable;
 import com.shulie.instrument.simulator.api.annotation.ListenerBehavior;
 import com.shulie.instrument.simulator.api.listener.ext.Advice;
 import com.shulie.instrument.simulator.api.reflect.Reflect;
-import redis.clients.jedis.*;
+import redis.clients.jedis.BinaryJedis;
+import redis.clients.jedis.Client;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisSentinelPool;
+import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.commands.ProtocolCommand;
-
-import java.lang.reflect.Field;
-import java.util.Iterator;
-import java.util.Set;
 
 /**
  * @author vincent
@@ -48,9 +51,10 @@ public class JedisInterceptor extends TraceInterceptorAdaptor {
     private static ConcurrentWeakHashMap<Class, Field> pipelineClientFieldCache = new ConcurrentWeakHashMap<Class, Field>();
 
     /**
-     * 防止{@link redis.clients.jedis.Client#set(byte[], byte[])}等方法和{@link redis.clients.jedis.Connection#sendCommand(ProtocolCommand)}增强方法重复执行
+     * 防止{@link redis.clients.jedis.Client#set(byte[], byte[])}等方法和
+     * {@link redis.clients.jedis.Connection#sendCommand(ProtocolCommand)}增强方法重复执行
      */
-    public static ThreadLocal<Boolean> interceptorApplied = new ThreadLocal<Boolean>(){
+    public static ThreadLocal<Boolean> interceptorApplied = new ThreadLocal<Boolean>() {
         @Override
         protected Boolean initialValue() {
             return false;
@@ -94,7 +98,7 @@ public class JedisInterceptor extends TraceInterceptorAdaptor {
                 return;
             }
 
-            Jedis jedis = (Jedis) advice.getTarget();
+            Jedis jedis = (Jedis)advice.getTarget();
             Client client = Reflect.on(jedis).get("client");
             String node = client.getHost().concat(":").concat(String.valueOf(client.getPort()));
             Object dataSource = null;
@@ -106,7 +110,7 @@ public class JedisInterceptor extends TraceInterceptorAdaptor {
                  */
                 dataSource = Reflect.on(jedis).get("dataSource");
                 if (dataSource != null &&
-                        JedisSentinelPool.class.isAssignableFrom(dataSource.getClass())) {
+                    JedisSentinelPool.class.isAssignableFrom(dataSource.getClass())) {
                     isSentinel = true;
                 }
 
@@ -150,7 +154,6 @@ public class JedisInterceptor extends TraceInterceptorAdaptor {
                         Pradar.getInvokeContext().setExt(ext);*/
                         break;
 
-
                     } else if (model.isClusterMode(node)) {
                         /**
                          * 集群模式
@@ -161,7 +164,7 @@ public class JedisInterceptor extends TraceInterceptorAdaptor {
                         /**
                          * 哨兵模式
                          */
-                        JedisSentinelPool jedisSentinelPool = (JedisSentinelPool) dataSource;
+                        JedisSentinelPool jedisSentinelPool = (JedisSentinelPool)dataSource;
                         String password = Reflect.on(jedisSentinelPool).get("password");
                         Integer database = Reflect.on(jedisSentinelPool).get("database");
                         Set set = Reflect.on(jedisSentinelPool).get("masterListeners");
@@ -175,27 +178,27 @@ public class JedisInterceptor extends TraceInterceptorAdaptor {
                             String host = ref.get("host");
                             String port = String.valueOf(ref.get("port"));
                             nodeBuilder.append(host.concat(":").concat(port))
-                                    .append(",");
+                                .append(",");
 
                         }
                         Attachment ext = new Attachment(
-                                null, RedisConstants.PLUGIN_NAME, new String[]{RedisConstants.MIDDLEWARE_NAME},
-                                new RedisTemplate.JedisSentinelTemplate()
-                                        .setMaster(masterName)
-                                        .setNodes(nodeBuilder.deleteCharAt(nodeBuilder.length() - 1).toString())
-                                        .setDatabase(database)
-                                        .setPassword(password));
+                            null, RedisConstants.PLUGIN_NAME, new String[] {RedisConstants.MIDDLEWARE_NAME},
+                            new RedisTemplate.JedisSentinelTemplate()
+                                .setMaster(masterName)
+                                .setNodes(nodeBuilder.deleteCharAt(nodeBuilder.length() - 1).toString())
+                                .setDatabase(database)
+                                .setPassword(password));
                         Pradar.getInvokeContext().setExt(ext);
                     } else {
                         //单机模式
                         String password = Reflect.on(client).get("password");
                         int db = Integer.parseInt(String.valueOf(Reflect.on(client).get("db")));
                         Attachment ext = new Attachment(node, RedisConstants.PLUGIN_NAME,
-                                new String[]{RedisConstants.MIDDLEWARE_NAME}
-                                , new RedisTemplate.JedisSingleTemplate()
-                                .setNodes(node)
-                                .setPassword(password)
-                                .setDatabase(db)
+                            new String[] {RedisConstants.MIDDLEWARE_NAME}
+                            , new RedisTemplate.JedisSingleTemplate()
+                            .setNodes(node)
+                            .setPassword(password)
+                            .setDatabase(db)
                         );
                         Pradar.getInvokeContext().setExt(ext);
                         break;
@@ -206,7 +209,6 @@ public class JedisInterceptor extends TraceInterceptorAdaptor {
                     return;
 
             }
-
 
         } catch (Throwable t) {
 
@@ -222,20 +224,18 @@ public class JedisInterceptor extends TraceInterceptorAdaptor {
         Object target = advice.getTarget();
 
         SpanRecord record = new SpanRecord();
-        record.setService(methodName);
-        record.setMethod(methodName);
-        record.setRequestSize(0);
 
         Client client = getClient(target);
         record.setRemoteIp(client.getHost());
         record.setPort(client.getPort());
-        //record.setCallbackMsg(client.getDB()+"");
+        record.setService(client.getDB() + "");
+        record.setMethod(methodName);
+        record.setRequestSize(0);
 
         record.setRequest(toArgs(args));
         record.setMiddlewareName(RedisConstants.MIDDLEWARE_NAME);
         return record;
     }
-
 
     private Client getClientFromPipeline(Object target) {
         if (target == null) {
@@ -249,7 +249,7 @@ public class JedisInterceptor extends TraceInterceptorAdaptor {
             }
         }
         try {
-            return (Client) field.get(target);
+            return (Client)field.get(target);
         } catch (Throwable e) {
             return Reflect.on(target).get("client");
         }
@@ -280,7 +280,7 @@ public class JedisInterceptor extends TraceInterceptorAdaptor {
     private Client getClient(Object target) {
         Client client;
         if (target instanceof BinaryJedis) {
-            BinaryJedis binaryJedis = (BinaryJedis) target;
+            BinaryJedis binaryJedis = (BinaryJedis)target;
             client = binaryJedis.getClient();
         } else if (target instanceof Pipeline) {
             client = getClientFromPipeline(target);

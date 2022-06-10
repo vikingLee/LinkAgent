@@ -1786,7 +1786,7 @@ public final class Pradar {
                 async = true;
             }
         }
-        ctx.async = async;
+        ctx.localAttributes.put("async", Boolean.toString(async));
     }
 
     /**

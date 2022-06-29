@@ -73,12 +73,12 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
-            <version>1.2.72</version>
+            <version>1.2.83</version>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.2.1</version>
+            <version>1.2.11</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
@@ -113,11 +113,13 @@
             <scope>provided</scope>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.apache-extras.beanshell/bsh -->
         <dependency>
-            <groupId>org.beanshell</groupId>
+            <groupId>org.apache-extras.beanshell</groupId>
             <artifactId>bsh</artifactId>
-            <version>2.0b5</version>
+            <version>2.0b6</version>
         </dependency>
+
 
         <dependency>
             <artifactId>slf4j-api</artifactId>

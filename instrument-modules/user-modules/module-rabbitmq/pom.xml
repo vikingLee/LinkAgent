@@ -19,7 +19,7 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
-            <version>1.2.72</version>
+            <version>1.2.83</version>
         </dependency>
         <dependency>
             <groupId>org.apache.curator</groupId>
@@ -34,7 +34,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>11.0.1</version>
+            <version>31.1-jre</version>
         </dependency>
         <dependency>
             <groupId>io.shulie.instrument.module</groupId>
